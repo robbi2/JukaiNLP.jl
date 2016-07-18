@@ -28,10 +28,3 @@ function zeros!{N<:Number}(v::Vector{N})
         v[i] = zero(N)
     end
 end
-
-function progmap{A}(f::Function, v::Vector{A})
-    p = Progress(length(v),1, "", 50)
-    map(v) do item
-        next!(p); f(item)
-    end
-end

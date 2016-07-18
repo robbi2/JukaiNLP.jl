@@ -1,5 +1,3 @@
-
-
 global words = Dict()
 global tags = Dict()
 global labels = Dict()
@@ -14,12 +12,13 @@ immutable Word
     labelstr ::String
     label    ::Int
     feature
-    function Word(word, tag, head, label, feature=nothing)
-        word_id  = get!(words, word, length(words))
-        tag_id   = get!(tags, tag, length(tags))
-        label_id = get!(labels, label, length(labels))
-        new(word, word_id, tag, tag_id, head, label, label_id, feature)
-    end
+end
+
+function Word(word, tag, head, label, feature=nothing)
+    word_id  = get!(words, word, length(words))
+    tag_id   = get!(tags, tag, length(tags))
+    label_id = get!(labels, label, length(labels))
+    new(word, word_id, tag, tag_id, head, label, label_id, feature)
 end
 
 typealias Sent Vector{Word}
