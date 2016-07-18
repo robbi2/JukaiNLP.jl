@@ -8,7 +8,7 @@ include("beamsearch.jl")
 module DepParsing
 
 include("token.jl")
-include("eval.jl")
+include("accuracy.jl")
 include("arcstd.jl")
 include("training.jl")
 
