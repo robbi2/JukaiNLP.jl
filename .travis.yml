@@ -4,7 +4,7 @@ os:
     - linux
     - osx
 
-julia: 
+julia:
     - 0.4
 
 notifications:
@@ -18,8 +18,8 @@ install:
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("Jukai"); Pkg.test("Jukai"; coverage=true)'
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("JukaiNLP"); Pkg.test("JukaiNLP"; coverage=true)'
 
 after_success:
-  - julia -e 'Pkg.clone("https://github.com/MichaelHatherly/Documenter.jl")'
-  - julia -e 'cd(Pkg.dir("Jukai")); include(joinpath("docs", "make.jl"))'
+  #- julia -e 'Pkg.clone("https://github.com/MichaelHatherly/Documenter.jl")'
+  #- julia -e 'cd(Pkg.dir("JukaiNLP")); include(joinpath("docs", "make.jl"))'
