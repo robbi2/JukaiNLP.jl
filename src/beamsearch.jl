@@ -1,5 +1,3 @@
-export beamsearch, max_violation!
-
 """
     beamsearch
 

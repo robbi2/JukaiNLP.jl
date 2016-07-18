@@ -1,28 +1,25 @@
 module JukaiNLP
 
 using Compat
+using Merlin
 using ProgressMeter
 
+const global dictpath = joinpath(Pkg.dir("JukaiNLP"), "dict")
+
+export decode, train
+export tokenize
+
+include("accuracy.jl")
 include("beamsearch.jl")
 
-module DepParsing
+include("tokenizer/tokenizer.jl")
+#include("depparsing/tokenizer.jl")
 
-include("token.jl")
-include("accuracy.jl")
-include("arcstd.jl")
-include("training.jl")
-
-end
-
-#include("utils.jl")
-#include("tokens.jl")
-# include("arceager.jl")
-#include("arcstd.jl")
-#include("perceptron.jl")
-
-#global trainfile = "corpus/wsj_02-21.conll"
-#global testfile = "corpus/wsj_23.conll"
-
-#@ConllFormat num word :- tag :- :- head label :- :-
+#module DepParsing
+#    include("token.jl")
+#    include("accuracy.jl")
+#    include("arcstd.jl")
+#    include("training.jl")
+#end
 
 end
