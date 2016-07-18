@@ -5,8 +5,8 @@ type Tokenizer
     nn
 end
 
-function Tokenizer()
-    dict = readdict(joinpath(dictpath,"en-char.dict"))
+function Tokenizer(dictfile)
+    dict = readdict(joinpath(dictpath,dictfile))
     #nn = @graph begin
     #  T = Float32
     #  x = Var(:x)
