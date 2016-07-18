@@ -6,7 +6,7 @@ type Tokenizer
 end
 
 function Tokenizer(dictfile)
-    dict = readdict(joinpath(dictpath,dictfile))
+    dict = readdict(joinpath(JukaiNLP.dictpath,dictfile))
     #nn = @graph begin
     #  T = Float32
     #  x = Var(:x)
@@ -67,6 +67,3 @@ function readdict(path)
     end
     dict
 end
-
-include("decode.jl")
-include("train.jl")
