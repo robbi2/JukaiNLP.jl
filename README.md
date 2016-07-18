@@ -1,4 +1,4 @@
-# JukaiNLP.jl: NLP Toolkit based on Deep Learning
+# JukaiNLP: NLP Toolkit based on Deep Learning
 
 [![Build Status](https://travis-ci.org/hshindo/JukaiNLP.jl.svg?branch=master)](https://travis-ci.org/hshindo/JukaiNLP.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/hshindo/JukaiNLP.jl?branch=master)](https://ci.appveyor.com/project/hshindo/jukaiNLP-jl/branch/master)

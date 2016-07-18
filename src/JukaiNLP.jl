@@ -3,11 +3,16 @@ module JukaiNLP
 using Compat
 using ProgressMeter
 
-include("token.jl")
 include("beamsearch.jl")
+
+module DepParsing
+
+include("token.jl")
 include("eval.jl")
 include("arcstd.jl")
 include("training.jl")
+
+end
 
 #include("utils.jl")
 #include("tokens.jl")
