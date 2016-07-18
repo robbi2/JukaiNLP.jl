@@ -1,0 +1,25 @@
+language: julia
+
+os:
+    - linux
+    - osx
+
+julia: 
+    - 0.4
+
+notifications:
+    email: false
+
+before_script:
+  - export PATH=$HOME/.local/bin:$PATH
+
+install:
+  #- pip install python-markdown-math
+
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("Jukai"); Pkg.test("Jukai"; coverage=true)'
+
+after_success:
+  - julia -e 'Pkg.clone("https://github.com/MichaelHatherly/Documenter.jl")'
+  - julia -e 'cd(Pkg.dir("Jukai")); include(joinpath("docs", "make.jl"))'
