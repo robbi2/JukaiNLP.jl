@@ -18,4 +18,4 @@ wordspath = "../../dict/en-word_nyt.dict"
 trainpath = "../../corpus/wsj_02-21.conll"
 testpath = "../../corpus/wsj_23.conll"
 
-train()
+#train()
