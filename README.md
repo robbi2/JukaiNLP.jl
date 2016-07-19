@@ -14,6 +14,7 @@ julia> Pkg.update()
 
 ## Tokenization
 ```julia
+t = Tokenizer()
 ```
 
 ## Dependency Parser
