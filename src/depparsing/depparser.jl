@@ -5,8 +5,8 @@ end
 
 using Compat
 using ProgressMeter
+using TransitionParser
 
-include("../beamsearch.jl")
 include("utils.jl")
 include("token.jl")
 include("arcstd.jl")
