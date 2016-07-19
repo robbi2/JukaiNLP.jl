@@ -61,7 +61,11 @@ end
 function stacktrace(io::IO, s::State)
     ss = state2array(s)
     for i in 1:length(ss)
-        i >= 2 && println(io, act(ss[i].prevact))
+        act = ss[i].prevact == 1 ? "SHIFT" :
+              ss[i].prevact == 2 ? "REDUCER" :
+              ss[i].prevact == 3 ? "REDUCEL" :
+              throw("Invalid action: $(ss[i].prevact).")
+        i > 1 && println(io, act)
         println(io, ss[i])
     end
 end
@@ -163,20 +167,19 @@ end
 ###################################################
 
 function featuregen(s::State)
-    s0i = s.top
-    s1i = isnull(s.left) ? 0 : get(s.left).top
-    s2i = isnull(s.left) ? 0 : isnull(get(s.left).left) ? 0 : get(get(s.left).left).top
     n0i = bufferisempty(s) ? 0 : s.right
-    s0  = tokenat(s, s0i)
-    s1  = tokenat(s, s1i)
-    s2  = tokenat(s, s2i)
     n0  = tokenat(s, n0i)
-    n1  = tokenat(s, n0i+1)
-    s0l = tokenat(s, s.lc)
-    s0r = tokenat(s, s.rc)
-    s1l = tokenat(s, isnull(s.left) ? 0 : get(s.left).lc)
-    s1r = tokenat(s, isnull(s.left) ? 0 : get(s.left).rc)
-
+    n1  = tokenat(s, n0i == 0 ? 0 : n0i+1)
+    s0  = tokenat(s, s.top)
+    s0l, s0r = tokenat(s, s.lc), tokenat(s, s.rc)
+    if isnull(s.left)
+        s1, s2, s1l, s1r = rootword, rootword, rootword, rootword
+    else
+        left = get(s.left)
+        s1 = tokenat(s, left.top)
+        s2 = tokenat(s, isnull(left.left) ? 0 : get(left.left).top)
+        s1l, s1r = tokenat(s, left.lc), tokenat(s, left.rc)
+    end
     len = size(s.model.weights, 1) # used in @template macro
     @template begin
         # template (1)
