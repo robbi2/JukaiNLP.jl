@@ -24,17 +24,19 @@ function beamsearch{T}(initstate::T, beamsize::Int, expand::Function)
         end
         k += 1
     end
-    chart
+    sort!(chart[end], lt=lessthan)
+    chart[end][1]
 end
 
 function to_seq{T}(finalstate::T)
     seq = T[]
     s = finalstate
-    while s != nothing
-        push!(seq, s)
+    # while s != nothing
+    while s.step > 1
+        unshift!(seq, s)
         s = s.prev
     end
-    reverse!(seq)
+    unshift!(seq, s)
     seq
 end
 
@@ -53,7 +55,7 @@ function max_violation!{T}(gold::T, pred::T, train_gold, train_pred)
             maxv = v
         end
     end
-    println("maxk: $(maxk) of $(length(goldseq))")
+    # println("maxk: $(maxk) of $(length(goldseq))")
     for k = 2:maxk
         train_gold(goldseq[k])
         train_pred(predseq[k])

@@ -4,26 +4,12 @@ const reducer = 3
 
 abstract Model
 
-typealias Head Int # token index
-typealias Dir Int  # Left, Right, Head
-typealias Order Int # Nth Left, Mth Right ..
-const L = 1
-const R = 2
-const H = 3
-const maxdir   = 3
-const maxorder = 2
-
-context(h::Head, d::Dir, o::Order) = (h+1) * maxdir * maxorder + d * maxorder + o
-
-function initedges(sent::Sent)
-    fill(-1, (length(sent)+1)*maxdir*maxorder+maxdir*maxorder+maxorder)
-end
-
 type State
     step::Int
     score::Float64
-    s0::Int
-    b0::Int
+    top::Int
+    left::Nullable{State}
+    right::Int
     lc::Int
     rc::Int
     tokens::Vector{Token}
@@ -32,47 +18,50 @@ type State
     prevact::Int
     feat::Vector{Int}
 
-    function State(step, score, stack, buffer, edges, sent, model)
-        new(step, score, stack, buffer, edges, sent, model)
+    function State(step, score, top, left, right, lc, rc, tokens, model)
+        new(step, score, top, left, right, lc, rc, tokens, model)
     end
+
+    function State(step, score, top, left, right, lc, rc, tokens, model, prev, prevact)
+        new(step, score, top, left, right, lc, rc, tokens, model, prev, prevact)
+    end
+
 end
 
-function State{M<:Model}(sent::Vector{Token}, model::M)
-    State(1, zero(Float),  # step, #score
-          Int[0],         # stack with root
-          1,                       # buffer
-          initedges(sent),         # edges
-          sent, model)             # sent, model
+function State{M<:Model}(tokens::Vector{Token}, model::M)
+    State(1, 0.0, 0, Nullable{State}(), 1, -1, -1, tokens, model)
 end
 
-function next(s::State, action::Int)
-    State(s.step + 1,                   # step
-          s.score + s.model(s, action), #score
-          copy(s.stack),                #stack
-          s.buffer,                     #buffer
-          copy(s.edges),                #edges
-          s.sent, s.model, s,            #sent, #model #prev
-          int(action))                  #prevact
+function stack2array(s::State)
+    st = s
+    res = Int[]
+    while !isnull(st.left)
+        unshift!(res, st.top)
+        st = get(st.left)
+    end
+    unshift!(res, st.top)
+    res
 end
 
 # prints [ a/NN b/VB ][ c/NN d/PP ]
 function Base.print(io::IO, s::State)
-    stack = map(s.stack) do i
+    stack = map(stack2array(s)) do i
         i == 0 ? "ROOT/ROOT" :
-        s.sent[i].wordstr * "/" * s.sent[i].tagstr
-    end |> reverse |> x -> join(x," ")
-    buffer = map(s.buffer) do i
-        s.sent[i].wordstr * "/" * s.sent[i].tagstr
-    end |> x -> join(x, " ")
+        id2word[s.tokens[i].word] * "/" * id2tag[s.tokens[i].tag]
+    end
+    stack = join(stack, " ")
+    buffer = map(s.right:length(s.tokens)) do i
+        id2word[s.tokens[i].word] * "/" * id2tag[s.tokens[i].tag]
+    end 
+    buffer = join(buffer, " ")
     print(io, "[", stack, "][", buffer, "]")
 end
 
 
 function stacktrace(io::IO, s::State)
     ss = state2array(s)
-    println(io, ss[1])
-    for i in 2:length(ss)
-        println(io, act(ss[i].prevact))
+    for i in 1:length(ss)
+        i >= 2 && println(io, act(ss[i].prevact))
         println(io, ss[i])
     end
 end
@@ -80,113 +69,113 @@ stacktrace(s::State) = stacktrace(STDOUT, s)
 
 function toconll(io::IO, s::State)
     pred = heads(s)
-    for i in 1:length(s.sent)
-        println(io, i, "\t", s.sent[i], "\t", pred[i])
+    for i in 1:length(s.tokens)
+        t = s.tokens[i]
+        items = [i, id2word[t.word], "-", id2tag[t.tag],
+                    pred[i], t.head, id2label[t.label]]
+        println(io, join(items, "\t"))
     end
     println(io, "")
 end
-conll(s::State) = conll(STDOUT, s)
+toconll(s::State) = conll(STDOUT, s)
 
 # to retrieve result
-heads(s::State) = map(i->s.edges[context(i,H,1)], 1:length(s.sent))
-hashead(s::State, i::Int) = s.edges[context(i,H,1)] != -1
+function heads(s::State)
+    @assert isfinal(s)
+    res = fill(-1, length(s.tokens))
+    st = s
+    while isdefined(st, :prev)
+        st.lc >= 0 && ( res[st.lc] = st.top )
+        st.rc >= 0 && ( res[st.rc] = st.top )
+        st = st.prev
+    end
+    @assert all(h -> h >= 0, res)
+    res
+end
 
 ###################################################
 #################### "expand"s ####################
 ###################################################
 
+function transit(s::State, act::Int, top::Int, left::Nullable{State}, right::Int, lc::Int, rc::Int)
+    State(s.step + 1, s.score + s.model(s, act),
+          top, left, right, lc, rc, s.tokens, s.model, s, act)
+end
+
 function expand(s::State, act::Int)
     if act == shift
+        return transit(s, act, s.right, Nullable{State}(s), s.right+1, -1, -1)
     elseif act == reducel
+        left = get(s.left)
+        return transit(s, act, s.top, left.left, s.right, left.top, s.rc)
     elseif act == reducer
+        left = get(s.left)
+        return transit(s, act, left.top, left.left, s.right, left.lc, s.top)
     else
         throw("Invalid action: $(act).")
     end
-
-    s = next(s, action)
-    s0i = shift!(s.stack)
-    s1i = shift!(s.stack)
-    unshift!(s.stack, s0i)
-    s.edges[context(s0i,L,2)] = s.edges[context(s0i,L,1)]
-    s.edges[context(s1i,H,2)] = s.edges[context(s0i,H,1)]
-    s.edges[context(s0i,L,1)] = s1i
-    s.edges[context(s1i,H,1)] = s0i
-    return s
 end
 
-#=
-function expand(s::State, action::Type{RightArc})
-    s   = next(s, action)
-    s0i = shift!(s.stack)
-    s1i = s.stack[1]
-    s.edges[context(s1i,R,2)] = s.edges[context(s1i,R,1)]
-    s.edges[context(s0i,H,2)] = s.edges[context(s1i,H,1)]
-    s.edges[context(s1i,R,1)] = s0i
-    s.edges[context(s0i,H,1)] = s1i
-    return s
-end
+tokenat(s::State, i::Int) = get(s.tokens, i, rootword)
 
-function expand(s::State, action::Type{Shift})
-    s   = next(s, action)
-    n0i = s.buffer
-    s.buffer += 1
-    unshift!(s.stack, n0i)
-    return s
-end
-=#
+# check if buffer is empty
+bufferisempty(s::State) = s.right > length(s.tokens)
 
-bufferisempty(s::State) = s.buffer > length(s.sent)
+# check if can perform Reduce, that is, length(stack) >= 2
+reducible(s::State) = !isnull(s.left)
 
-isvalid(s::State, ::Type{LeftArc}) = length(s.stack) >= 2 && s.stack[2] != 0
-isvalid(s::State, ::Type{RightArc}) = length(s.stack) >= 2
-isvalid(s::State, ::Type{Shift}) = !bufferisempty(s)
-
-isgold(s::State, ::Type{LeftArc}) = isvalid(s, LeftArc)  && s.sent[s.stack[2]].head == s.stack[1]
-isgold(s::State, ::Type{RightArc}) = isvalid(s, RightArc) && s.sent[s.stack[1]].head == s.stack[2] && all(i -> s.sent[i].head != first(s.stack), s.buffer:length(s.sent))
-isgold(s::State, ::Type{Shift}) = isvalid(s, Shift)
-
-isfinal(s::State) = bufferisempty(s) && length(s.stack) == 1
+# check if the state is final state
+isfinal(s::State) = bufferisempty(s) && !reducible(s)
 
 function expandpred(s::State)
     isfinal(s) && return []
     res = State[]
-    isvalid(s, LeftArc)  && push!(res, expand(s, LeftArc))
-    isvalid(s, RightArc) && push!(res, expand(s, RightArc))
-    isvalid(s, Shift)    && push!(res, expand(s, Shift))
-    return res
+    if reducible(s)
+        push!(res, expand(s, reducer))
+        if get(s.left).top != 0
+            push!(res, expand(s, reducel))
+        end
+    end
+    bufferisempty(s) || push!(res, expand(s, shift))
+    res
 end
 
 function expandgold(s::State)
     isfinal(s) && return []
-    isgold(s, LeftArc)  && return [expand(s, LeftArc)]
-    isgold(s, RightArc) && return [expand(s, RightArc)]
-    isgold(s, Shift)    && return [expand(s, Shift)]
-    stacktrace(s)
-    throw("NO ACTION TO PERFORM")
+    if !reducible(s)
+        return [expand(s, shift)]
+    else
+        s0 = tokenat(s, s.top)
+        s1 = tokenat(s, get(s.left).top)
+        if s1.head == s.top
+            return [expand(s, reducel)]
+        elseif s0.head == get(s.left).top
+            if all(i -> tokenat(s, i).head != s.top, s.right:length(s.tokens))
+                return [expand(s, reducer)]
+            end
+        end
+    end
+    return [expand(s, shift)]
 end
 
 ###################################################
 ################## feature function ###############
 ###################################################
 
-ind2word(s::State, i::Int) = get(s.sent, i, rootword)
-
 function featuregen(s::State)
-    stack = s.stack
-    stacklen = length(stack)
-    s0i = stacklen < 1 ? 0 : stack[1]
-    s1i = stacklen < 2 ? 0 : stack[2]
-    s2i = stacklen < 3 ? 0 : stack[3]
-    n0i = bufferisempty(s) ? 0 : s.buffer
-    s0  = ind2word(s, s0i)
-    s1  = ind2word(s, s1i)
-    s2  = ind2word(s, s2i)
-    n0  = ind2word(s, n0i)
-    n1  = ind2word(s,  n0i+1)
-    s0l  = ind2word(s, s.edges[context(s0i,L,1)])
-    s0r  = ind2word(s, s.edges[context(s0i,R,1)])
-    s1l  = ind2word(s, s.edges[context(s1i,L,1)])
-    s1r  = ind2word(s, s.edges[context(s1i,R,1)])
+    s0i = s.top
+    s1i = isnull(s.left) ? 0 : get(s.left).top
+    s2i = isnull(s.left) ? 0 : isnull(get(s.left).left) ? 0 : get(get(s.left).left).top
+    n0i = bufferisempty(s) ? 0 : s.right
+    s0  = tokenat(s, s0i)
+    s1  = tokenat(s, s1i)
+    s2  = tokenat(s, s2i)
+    n0  = tokenat(s, n0i)
+    n1  = tokenat(s, n0i+1)
+    s0l = tokenat(s, s.lc)
+    s0r = tokenat(s, s.rc)
+    s1l = tokenat(s, isnull(s.left) ? 0 : get(s.left).lc)
+    s1r = tokenat(s, isnull(s.left) ? 0 : get(s.left).rc)
 
     len = size(s.model.weights, 1) # used in @template macro
     @template begin
