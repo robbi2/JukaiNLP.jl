@@ -8,6 +8,7 @@
 ## Installation
 ```julia
 julia> Pkg.clone("https://github.com/hshindo/Merlin.jl.git")
+julia> Pkg.clone("https://github.com/hshindo/TransitionParser.jl.git")
 julia> Pkg.clone("https://github.com/hshindo/JukaiNLP.jl.git")
 julia> Pkg.update()
 ```
