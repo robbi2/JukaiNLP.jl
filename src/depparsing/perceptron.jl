@@ -5,7 +5,6 @@ type Perceptron  <: Model
     weights::Matrix{Float64}
 end
 
-# function call{A<:Action}(p::Perceptron, s::State, action::Type{A})
 @compat function (p::Perceptron)(s::State, act::Int)
     if !isdefined(s, :feat)
         s.feat = featuregen(s)

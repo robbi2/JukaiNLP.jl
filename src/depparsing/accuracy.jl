@@ -1,5 +1,5 @@
-function evaluate(ss::Vector{State})
-    ignore = map(w -> word2id[w], ["''", ",", ".", ":", "``", "``"])
+function evaluate(parser::DepParser, ss::Vector{State})
+    ignore = map(w -> parser.words[w], ["''", ",", ".", ":", "``", "``"])
     num, den = 0, 0
     for s in ss
         pred = heads(s)

@@ -44,7 +44,9 @@ function stack2array(s::State)
 end
 
 # prints [ a/NN b/VB ][ c/NN d/PP ]
-function Base.print(io::IO, s::State)
+function Base.print(io::IO, parser:: DepParser, s::State)
+    id2word = parser.words.idkey
+    id2tag = parser.tags.idkey
     stack = map(stack2array(s)) do i
         i == 0 ? "ROOT/ROOT" :
         id2word[s.tokens[i].word] * "/" * id2tag[s.tokens[i].tag]
@@ -58,7 +60,7 @@ function Base.print(io::IO, s::State)
 end
 
 
-function stacktrace(io::IO, s::State)
+function stacktrace(io::IO, parser::DepParser, s::State)
     ss = state2array(s)
     for i in 1:length(ss)
         act = ss[i].prevact == 1 ? "SHIFT" :
@@ -66,12 +68,15 @@ function stacktrace(io::IO, s::State)
               ss[i].prevact == 3 ? "REDUCEL" :
               throw("Invalid action: $(ss[i].prevact).")
         i > 1 && println(io, act)
-        println(io, ss[i])
+        println(io, parser, ss[i])
     end
 end
-stacktrace(s::State) = stacktrace(STDOUT, s)
+stacktrace(parser::DepParser, s::State) = stacktrace(STDOUT, parser, s)
 
-function toconll(io::IO, s::State)
+function toconll(io::IO, parser::DepParser, s::State)
+    id2word = parser.words.idkey
+    id2tag = parser.tags.idkey
+    id2label = parser.labels.idkey
     pred = heads(s)
     for i in 1:length(s.tokens)
         t = s.tokens[i]
@@ -81,7 +86,7 @@ function toconll(io::IO, s::State)
     end
     println(io, "")
 end
-toconll(s::State) = conll(STDOUT, s)
+toconll(parser::DepParser, s::State) = conll(STDOUT, parser, s)
 
 # to retrieve result
 function heads(s::State)

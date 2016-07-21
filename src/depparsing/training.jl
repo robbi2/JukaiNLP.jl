@@ -1,35 +1,35 @@
 
-function train(iter::Int=20)
+function train!(parser::DepParser, trainsents, testsents=[]; iter=20, progbar=true)
     info("LOADING SENTENCES")
-    readworddict!(wordspath)
-    trainsents = readconll(trainpath)
-    testsents  = readconll(testpath)
-    model = Perceptron(zeros(1<<26,4))
-    output = open("output", "w")
-
     info("WILL RUN $iter ITERATIONS")
     for i = 1:iter
         info("ITER $i TRAINING")
-        p = Progress(length(trainsents), 1, "", 50)
-        map(trainsents) do s
+        progbar && ( p = Progress(length(trainsents), 1, "", 50) )
+        res = map(trainsents) do s
             next!(p)
-            s = State(s, model)
+            s = State(s, parser.model)
             gold = beamsearch(s, 1, expandgold)
             pred = beamsearch(s, 10, expandpred)
             max_violation!(gold, pred,
-                s -> traingold!(model, s), s -> trainpred!(model, s))
+                s -> traingold!(parser.model, s),
+                s -> trainpred!(parser.model, s))
             pred
-        end |> evaluate
+        end
+        evaluate(parser, res)
 
-        info("ITER $i TESTING")
-        p = Progress(length(testsents), 1, "", 50)
-        map(testsents) do s
-            next!(p)
-            pred = State(s, model)
-            pred_out = beamsearch(pred, 10, expandpred)
-            toconll(output, pred_out)
-            pred_out
-        end |> evaluate
+        if !isempty(testsents)
+            info("ITER $i TESTING")
+            res = decode(parser, testsents)
+            evaluate(parser, res)
+        end
     end
-    close(output)
+end
+
+function decode(parser::DepParser, sents; progbar=true)
+    progbar && ( p = Progress(length(sents), 1, "", 50) )
+    map(sents) do s
+        progbar && next!(p)
+        pred = State(s, parser.model)
+        beamsearch(pred, 10, expandpred)
+    end
 end

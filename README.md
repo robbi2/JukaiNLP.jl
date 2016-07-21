@@ -14,5 +14,17 @@ julia> Pkg.update()
 
 ### Dependency Parser
 ```julia
-
+using JukaiNLP: Perceptron, DepParser, readconll, train, decode, evaluate
+model = Perceptron(zeros(1<<26,4))
+parser = DepParser("dict/en-word_nyt.dict", model)
+trainsents = readconll(parser, "corpus/wsj_02-21.conll")
+testsents = readconll(parser, "corpus/wsj_23.conll")
+train!(parser, trainsents, iter=20)
+# can also pass testsents as 3rd argument
+# to see the accuracy on the test data after every iteration
+train!(parser, trainsents, testsents, iter=20)
+# turn off the progress bar
+train!(parser, trainsents, iter=20, progbar=false)
+res = decode(parser, testsents)
+evaluate(parser, res)
 ```

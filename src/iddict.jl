@@ -10,13 +10,19 @@ IdDict() = IdDict(Any)
 function IdDict(path)
   d = IdDict(AbstractString)
   for line in open(readlines, path)
-    append!(d, chomp(line))
+    add!(d, chomp(line))
   end
   d
 end
 
 Base.getindex{T}(d::IdDict{T}, key::T) = d.keyid[key]
 Base.get{T}(d::IdDict{T}, item::T, default=0) = get(d.keyid, item, default)
+
+function Base.get!{T}(d::IdDict{T}, item::T)
+  haskey(d.keyid, item) || add!(d, item)
+  d.keyid[item]
+end
+
 Base.length(d::IdDict) = length(d.keyid)
 
 function add!{T}(d::IdDict{T}, item::T)
