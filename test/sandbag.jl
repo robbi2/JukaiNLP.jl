@@ -1,8 +1,16 @@
 workspace()
 using JukaiNLP
+using JLD
 
-trainfile = "corpus/wsj_02-21.conll"
-testfile = "corpus/wsj_23.conll"
+# training
+trainpath = joinpath(Pkg.dir("JukaiNLP"), "corpus/webtreebank.conll")
+t = Tokenizer()
+train(t, trainpath)
+modelpath = "C:/Users/shindo/Desktop/tokenizer_20.jld"
+save(modelpath, "tokenizer", t)
 
-t = Tokenizer("en-char.dict")
-p = DepParser()
+# testing
+t = load(modelpath, "tokenizer")
+str = "Pierre Vinken, 61 years old, will join the board. I have a pen. "
+doc = decode(t, str)
+map(r -> str[r], doc[2])

@@ -8,11 +8,31 @@
 ## Installation
 ```julia
 julia> Pkg.clone("https://github.com/hshindo/Merlin.jl.git")
+julia> Pkg.clone("https://github.com/hshindo/TransitionParser.jl.git")
 julia> Pkg.clone("https://github.com/hshindo/JukaiNLP.jl.git")
 julia> Pkg.update()
 ```
 
-### Dependency Parser
+## Tokenization
+```julia
+using JukaiNLP
+using JLD
+
+# training
+trainpath = joinpath(Pkg.dir("JukaiNLP"), "corpus/webtreebank.conll")
+t = Tokenizer()
+train(t, trainpath)
+modelpath = "C:/Users/hshindo/Desktop/tokenizer_50.jld"
+save(modelpath, "tokenizer", t)
+
+# testing
+t = load(modelpath, "tokenizer")
+str = "Pierre Vinken, 61 years old, will join the board. I have a pen. "
+doc = decode(t, str)
+map(r -> str[r], doc[1])
+```
+
+## Dependency Parsing
 ```julia
 using JukaiNLP: Perceptron, DepParser, readconll, train, decode, evaluate
 model = Perceptron(zeros(1<<26,4))
