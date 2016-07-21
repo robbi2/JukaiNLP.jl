@@ -7,8 +7,8 @@ using ProgressMeter
 export decode, train
 
 include("iddict.jl")
-include("accuracy.jl")
-include("beamsearch.jl")
+#include("accuracy.jl")
+#include("beamsearch.jl")
 include("tokenization/Tokenization.jl")
 include("depparsing/DepParsing.jl")
 
