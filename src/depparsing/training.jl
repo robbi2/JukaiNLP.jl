@@ -1,5 +1,8 @@
 
-function train!(parser::DepParser, trainsents, testsents=[]; iter=20, progbar=true)
+typealias Doc Vector{Vector{Token}}
+
+function train!(parser::DepParser, trainsents::Doc,
+    testsents::Doc=Vector{Token}[]; beamsize=10, iter=20, progbar=true)
     info("LOADING SENTENCES")
     info("WILL RUN $iter ITERATIONS")
     for i = 1:iter
@@ -9,7 +12,7 @@ function train!(parser::DepParser, trainsents, testsents=[]; iter=20, progbar=tr
             next!(p)
             s = State(s, parser.model)
             gold = beamsearch(s, 1, expandgold)
-            pred = beamsearch(s, 10, expandpred)
+            pred = beamsearch(s, beamsize, expandpred)
             max_violation!(gold, pred,
                 s -> traingold!(parser.model, s),
                 s -> trainpred!(parser.model, s))
@@ -25,11 +28,24 @@ function train!(parser::DepParser, trainsents, testsents=[]; iter=20, progbar=tr
     end
 end
 
-function decode(parser::DepParser, sents; progbar=true)
+function train!(parser::DepParser, trainfile::AbstractString,
+    testfile::AbstractString=""; beamsize=10, iter=20, progbar=true)
+    trainsents = readconll(parser, trainfile)
+    testsents = testfile == "" ? Vector{Token}[] : readconll(parser, testfile)
+    train!(parser, trainsents, testsents,
+        beamsize=beamsize, iter=iter, progbar=progbar)
+end
+
+function decode(parser::DepParser, sents::Doc; beamsize=10, progbar=true)
     progbar && ( p = Progress(length(sents), 1, "", 50) )
     map(sents) do s
         progbar && next!(p)
         pred = State(s, parser.model)
-        beamsearch(pred, 10, expandpred)
+        beamsearch(pred, beamsize, expandpred)
     end
+end
+
+function decode(parser::DepParser, sentfile::AbstractString; beamsize=10, progbar=true)
+    sents = readconll(parser, sentfile)
+    decode(parser, sents, beamsize=beamsize, progbar=progbar)
 end

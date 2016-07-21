@@ -34,11 +34,11 @@ map(r -> str[r], doc[1])
 
 ## Dependency Parsing
 ```julia
-using JukaiNLP: Perceptron, DepParser, readconll, train, decode, evaluate
+using JukaiNLP: Perceptron, DepParser, readconll, train!, decode, evaluate
 model = Perceptron(zeros(1<<26,4))
 parser = DepParser("dict/en-word_nyt.dict", model)
-trainsents = readconll(parser, "corpus/wsj_02-21.conll")
-testsents = readconll(parser, "corpus/wsj_23.conll")
+sents = readconll(parser, "corpus/sample_depparsing.conll")
+trainsents, testsents = sents[1:2800], sents[2801:end]
 train!(parser, trainsents, iter=20)
 # can also pass testsents as 3rd argument
 # to see the accuracy on the test data after every iteration
