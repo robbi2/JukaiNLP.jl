@@ -14,10 +14,19 @@ julia> Pkg.update()
 
 ## Tokenization
 ```julia
+using JukaiNLP
+using JLD
+
+# training
+trainpath = joinpath(Pkg.dir("JukaiNLP"), "corpus/webtreebank.conll")
 t = Tokenizer()
-```
+train(t, trainpath)
+modelpath = "C:/Users/hshindo/Desktop/tokenizer_50.jld"
+save(modelpath, "tokenizer", t)
 
-## Dependency Parser
-```julia
-
+# testing
+t = load(modelpath, "tokenizer")
+str = "Pierre Vinken, 61 years old, will join the board. I have a pen. "
+doc = decode(t, str)
+map(r -> str[r], doc[1])
 ```

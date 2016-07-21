@@ -1,24 +1,37 @@
 export Tokenizer
 
-type Tokenizer
-    dict::Dict
-    nn
+type Model
+    embed
+    conv
+    l1
+    l2
 end
 
-function Tokenizer(dictfile)
-    dict = readdict(joinpath(JukaiNLP.dictpath,dictfile))
-    #nn = @graph begin
-    #  T = Float32
-    #  x = Var(:x)
-    #  x = Lookup(T,100,10)(x)
-    #  x = Window2D(10,7,1,1,0,3)(x)
-    #  x = Linear(T,70,70)(x)
-    #  x = relu(x)
-    #  x = Linear(T,70,4)(x)
-    #  x
-    #end
-    nn = nothing
-    Tokenizer(dict, nn)
+function Model()
+    T = Float32
+    embed =Embed(T,100,10)
+    conv = Conv(T, (10,7), (1,70), paddims=(0,3))
+    Model(embed, conv, Linear(T,70,70), Linear(T,70,4))
+end
+
+@compat function (m::Model)(x::Vector{Int})
+    x = Var(reshape(x,1,length(x)))
+    x = m.embed(x)
+    x = m.conv(x)
+    x = reshape(x, size(x,2), size(x,3))
+    x = transpose(x)
+    x |> m.l1 |> relu |> m.l2
+end
+
+type Tokenizer
+    dict::Dict
+    nn::Model
+end
+
+function Tokenizer()
+    path = joinpath(Pkg.dir("JukaiNLP"),"dict/en-char.dict")
+    dict = readdict(path)
+    Tokenizer(dict, Model())
 end
 
 function readtsv(path)
@@ -39,7 +52,7 @@ function readtsv(path)
     doc
 end
 
-function readconll(path)
+function readconll(t::Tokenizer, path)
     unk = t.dict["UNKNOWN"]
     data_x, data_y = Vector{Int}[], Vector{Int}[]
     doc = readtsv(path)
@@ -55,7 +68,6 @@ function readconll(path)
             push!(data_y[end], tagid)
         end
     end
-    data_x = map(x -> Var(reshape(x, 1, length(x))), data_x)
     data_y = map(Var, data_y)
     data_x, data_y
 end
