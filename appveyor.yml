@@ -1,6 +1,7 @@
 environment:
   matrix:
-  - JULIAVERSION: "x64/0.4/julia-0.4-latest-win64.exe"
+  - JULIAVERSION: "julialang/bin/winnt/x64/0.4/julia-0.4-latest-win64.exe"
+  - JULIAVERSION: "julianightlies/bin/winnt/x64/julia-latest-win64.exe"
 
 install:
 # Download most recent Julia Windows binary
@@ -12,7 +13,8 @@ build_script:
 # Need to convert from shallow to complete for Pkg.clone to work
   - IF EXIST .git\shallow (git fetch --unshallow)
   - C:\projects\julia\bin\julia -F -e "versioninfo();
-    Pkg.clone(pwd(), \"JukaiNLP\"); Pkg.build(\"JukaiNLP\")"
+    Pkg.clone(pwd(), \"Merlin\"); Pkg.build(\"Merlin\");
+    Pkg.clone(pwd(), \"JukaiNLP\"); Pkg.build(\"JukaiNLP\");"
 
 test_script:
   - C:\projects\julia\bin\julia -e "Pkg.test(\"JukaiNLP\")"
