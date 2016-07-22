@@ -42,11 +42,9 @@ Base.count(d::IdDict, id::Int) = d.id2count[id]
 
 Base.getkey(d::IdDict, id::Int) = d.id2key[id]
 
-getid{T}(d::IdDict{T}, key::T) = getindex(d, key)
-
 Base.getindex{T}(d::IdDict{T}, key::T) = d.key2id[key]
 
-Base.get{T}(d::IdDict{T}, key::T, default=0) = get(d.key2id, key, default)
+Base.get{T}(d::IdDict{T}, key::T, default::Int=0) = get(d.key2id, key, default)
 
 Base.length(d::IdDict) = length(d.key2id)
 
