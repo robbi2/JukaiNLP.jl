@@ -53,5 +53,5 @@ function toconll(io::IO, parser::DepParser, s::State)
     end
     println(io, "")
 end
-toconll(parser::DepParser, s::State) = conll(STDOUT, parser, s)
+toconll(parser::DepParser, s::State) = toconll(STDOUT, parser, s)
 

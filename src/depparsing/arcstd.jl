@@ -8,28 +8,35 @@ type State
     step::Int
     score::Float64
     top::Int
-    left::Nullable{State}
     right::Int
-    lc::Int
-    rc::Int
+    left
+    lchild
+    rchild
+    lsibl
+    rsibl
     tokens::Vector{Token}
     model::Model
     prev::State
     prevact::Int
     feat::Vector{Int}
 
-    function State(step, score, top, left, right, lc, rc, tokens, model)
-        new(step, score, top, left, right, lc, rc, tokens, model)
+    function State(step, score, top, right, left,
+        lchild, rchild, lsibl, rsibl, tokens, model)
+        new(step, score, top, right, left,
+            lchild, rchild, lsibl, rsibl, tokens, model)
     end
 
-    function State(step, score, top, left, right, lc, rc, tokens, model, prev, prevact)
-        new(step, score, top, left, right, lc, rc, tokens, model, prev, prevact)
+    function State(step, score, top, right, left,
+        lchild, rchild, lsibl, rsibl, tokens, model, prev, prevact)
+        new(step, score, top, right, left,
+            lchild, rchild, lsibl, rsibl, tokens, model, prev, prevact)
     end
 
 end
 
 function State{M<:Model}(tokens::Vector{Token}, model::M)
-    State(1, 0.0, 0, Nullable{State}(), 1, -1, -1, tokens, model)
+    State(1, 0.0, 0, 1, nothing, nothing,
+        nothing, nothing, nothing, tokens, model)
 end
 
 # to retrieve result
@@ -38,45 +45,45 @@ function heads(s::State)
     res = fill(-1, length(s.tokens))
     st = s
     while isdefined(st, :prev)
-        st.lc >= 0 && ( res[st.lc] = st.top )
-        st.rc >= 0 && ( res[st.rc] = st.top )
+        st.lchild != nothing && ( res[st.lchild.top] = st.top )
+        st.rchild != nothing && ( res[st.rchild.top] = st.top )
         st = st.prev
     end
     @assert all(h -> h >= 0, res)
     res
 end
 
+tokenat(s::State, i::Int) = get(s.tokens, i, rootword)
+tokenat(s::State, t::State) = get(s.tokens, t.top, rootword)
+tokenat(s::State, ::Void) = rootword
+
 ###################################################
 #################### "expand"s ####################
 ###################################################
 
-function transit(s::State, act::Int, top::Int, left::Nullable{State}, right::Int, lc::Int, rc::Int)
-    println(act)
-    State(s.step + 1, s.score + s.model(s, act),
-          top, left, right, lc, rc, s.tokens, s.model, s, act)
+function transit(s::State, act::Int, top::Int,
+    right::Int, left, lchild, rchild, lsibl, rsibl)
+    State(s.step + 1, s.score + s.model(s, act), top, right,
+        left, lchild, rchild, lsibl, rsibl, s.tokens, s.model, s, act)
 end
 
 function expand(s::State, act::Int)
     if act == shift
-        return transit(s, act, s.right, Nullable{State}(s), s.right+1, -1, -1)
+        return transit(s, act, s.right, s.right+1, s, nothing, nothing, nothing, nothing)
     elseif act == reducel
-        left = get(s.left)
-        return transit(s, act, s.top, left.left, s.right, left.top, s.rc)
+        return transit(s, act, s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl)
     elseif act == reducer
-        left = get(s.left)
-        return transit(s, act, left.top, left.left, s.right, left.lc, s.top)
+        return transit(s, act, s.left.top, s.right, s.left.left, s.left.lchild, s, s.lsibl, s)
     else
         throw("Invalid action: $(act).")
     end
 end
 
-tokenat(s::State, i::Int) = get(s.tokens, i, rootword)
-
 # check if buffer is empty
 bufferisempty(s::State) = s.right > length(s.tokens)
 
 # check if can perform Reduce, that is, length(stack) >= 2
-reducible(s::State) = !isnull(s.left)
+reducible(s::State) = s.left != nothing
 
 # check if the state is final state
 isfinal(s::State) = bufferisempty(s) && !reducible(s)
@@ -86,7 +93,7 @@ function expandpred(s::State)
     res = State[]
     if reducible(s)
         push!(res, expand(s, reducer))
-        if get(s.left).top != 0
+        if s.left.top != 0
             push!(res, expand(s, reducel))
         end
     end
@@ -100,10 +107,10 @@ function expandgold(s::State)
         return [expand(s, shift)]
     else
         s0 = tokenat(s, s.top)
-        s1 = tokenat(s, get(s.left).top)
+        s1 = tokenat(s, s.left.top)
         if s1.head == s.top
             return [expand(s, reducel)]
-        elseif s0.head == get(s.left).top
+        elseif s0.head == s.left.top
             if all(i -> tokenat(s, i).head != s.top, s.right:length(s.tokens))
                 return [expand(s, reducer)]
             end
@@ -116,19 +123,35 @@ end
 ################## feature function ###############
 ###################################################
 
+# function tokenat(s::State, syms::Symbol...)
+#     if length(syms) == 1
+#         return tokenat(s, s.(syms[1]))
+#     else
+#         tok = tokenat(s, s.(syms[1]))
+#         if tok == rootword
+#             return tok
+#         else
+#             tokenat(s.(syms[1]), syms[2:end])
+#         end
+#     end
+# end
+
 function featuregen(s::State)
-    n0i = bufferisempty(s) ? 0 : s.right
-    n0  = tokenat(s, n0i)
-    n1  = tokenat(s, n0i == 0 ? 0 : n0i+1)
+    n0  = tokenat(s, s.right)
+    n1  = tokenat(s, s.right+1)
     s0  = tokenat(s, s.top)
-    s0l, s0r = tokenat(s, s.lc), tokenat(s, s.rc)
-    if isnull(s.left)
+    s0l = tokenat(s, s.lchild)
+    s0r = tokenat(s, s.rchild)
+    s0l2 = tokenat(s, s.lsibl) # s0's lmost child's sibling
+    s0r2 = tokenat(s, s.rsibl)
+    # s02l = tokenat(s, :lchild, :lchild)
+    if s.left == nothing
         s1, s2, s1l, s1r = rootword, rootword, rootword, rootword
     else
-        left = get(s.left)
-        s1 = tokenat(s, left.top)
-        s2 = tokenat(s, isnull(left.left) ? 0 : get(left.left).top)
-        s1l, s1r = tokenat(s, left.lc), tokenat(s, left.rc)
+        s1 = tokenat(s, s.left.top)
+        s2 = tokenat(s, s.left.left)
+        s1l = tokenat(s, s.left.lchild)
+        s1r = tokenat(s, s.left.rchild)
     end
     len = size(s.model.weights, 1) # used in @template macro
     @template begin

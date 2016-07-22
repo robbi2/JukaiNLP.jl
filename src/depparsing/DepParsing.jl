@@ -20,6 +20,7 @@ export DepParser,
        readconll,
        train!,
        decode,
-       evaluate
+       evaluate,
+       toconll
 
 end
