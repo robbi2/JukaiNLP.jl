@@ -2,6 +2,12 @@ workspace()
 using JukaiNLP
 using JLD
 
+dict = JukaiNLP.IdDict{AbstractString}()
+id1 = push!(dict, "abc")
+id2 = push!(dict, "def")
+id3 = push!(dict, "abc")
+
+
 path = joinpath(Pkg.dir("JukaiNLP"),"corpus/sample_tokenization.conll")
 doc = JukaiNLP.Tokenization.readfile(path)
 doc[1]

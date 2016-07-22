@@ -1,48 +1,57 @@
+"""
+    IdDict{T}
+
+A dictionary for converting item::T into integer id.
+
+## 👉 Example
+```julia
+dict = IdDict{AbstractString}()
+id1 = push!(dict, "abc")
+id2 = push!(dict, "def")
+id3 = push!(dict, "abc")
+```
+"""
 type IdDict{T}
-    keyid::Dict{T,Int}
-    idkey::Vector{T}
-    idcount::Vector{Int}
+    key2id::Dict{T,Int}
+    id2key::Vector{T}
+    id2count::Vector{Int}
+
+    IdDict() = new(Dict{T,Int}(), T[], Int[])
 end
+IdDict() = IdDict{Any}()
 
-IdDict{T}(::Type{T}) = IdDict(Dict{T,Int}(), T[], Int[])
-IdDict() = IdDict(Any)
+"""
+    IdDict(path)
 
-function IdDict(path)
-    d = IdDict(AbstractString)
+Construct IdDict from a file.
+"""
+function IdDict(T::Type, path)
+    d = IdDict{T}()
     for line in open(readlines, path)
-        add!(d, chomp(line))
+        push!(d, T(chomp(line)))
     end
     d
 end
 
-Base.getindex{T}(d::IdDict{T}, key::T) = d.keyid[key]
-Base.get{T}(d::IdDict{T}, item::T, default=0) = get(d.keyid, item, default)
+Base.count(d::IdDict, id::Int) = d.id2count[id]
 
-function Base.get!{T}(d::IdDict{T}, item::T)
-    haskey(d.keyid, item) || add!(d, item)
-    d.keyid[item]
-end
+Base.getkey(d::IdDict, id::Int) = d.id2key[id]
 
-Base.length(d::IdDict) = length(d.keyid)
+Base.getindex{T}(d::IdDict{T}, key::T) = d.key2id[key]
 
-function add!{T}(d::IdDict{T}, item::T)
-    if haskey(d.keyid, item)
-        id = d.keyid[item]
-        d.idcount[id] += 1
+Base.get{T}(d::IdDict{T}, key::T, default=0) = get(d.key2id, key, default)
+
+Base.length(d::IdDict) = length(d.key2id)
+
+function Base.push!{T}(d::IdDict{T}, key::T)
+    if haskey(d.key2id, key)
+        id = d.key2id[key]
+        d.id2count[id] += 1
     else
-        id = length(d.keyid) + 1
-        d.keyid[item] = id
-        push!(d.idkey, item)
-        push!(d.idcount, 1)
+        id = length(d.key2id) + 1
+        d.key2id[key] = id
+        push!(d.id2key, key)
+        push!(d.id2count, 1)
     end
     id
-end
-
-getcount{T}(d::IdDict{T}, id::Int) = d.idcount[id]
-
-function trim!{T}(d::IdDict{T})
-    for i = 1:length(d.idkey)
-        c = d.idcount[i]
-        c == 0 && delete!(d.keyid, d.idkey[i])
-    end
 end
