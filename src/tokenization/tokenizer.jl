@@ -4,7 +4,7 @@ function model()
     T = Float32
     embed = Embed(T,100,10)
     conv = Conv(T, (10,7), (1,70), paddims=(0,3))
-    l = Linear(T,70,4)(x)
+    l = Linear(T,70,4)
     (x::Vector{Int}) -> begin
         x = Var(reshape(x,1,length(x)))
         x = embed(x)
