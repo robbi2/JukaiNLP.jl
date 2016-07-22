@@ -2,6 +2,10 @@ workspace()
 using JukaiNLP
 using JLD
 
+path = joinpath(Pkg.dir("JukaiNLP"),"corpus/sample_tokenization.conll")
+doc = JukaiNLP.Tokenization.readfile(path)
+doc[1]
+
 # training
 trainpath = joinpath(Pkg.dir("JukaiNLP"), "corpus/webtreebank.conll")
 t = Tokenizer()
