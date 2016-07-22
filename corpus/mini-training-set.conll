@@ -14,7 +14,7 @@
 14	support	_	NN	NN	_	13	pobj	_	_	S
 15	.	_	.	.	_	2	punct	_	_	_
 
-1	The	_	DT	DT	_	2	det	_	_	L
+1	The	_	DT	DT	_	2	det	_	_	N
 2	journey	_	NN	NN	_	8	nsubj	_	_	S
 3	through	_	IN	IN	_	2	prep	_	_	S
 4	deserts	_	NNS	NNS	_	3	pobj	_	_	S
@@ -26,7 +26,7 @@
 10	month	_	NN	NN	_	8	tmod	_	_	S
 11	.	_	.	.	_	8	punct	_	_	_
 
-1	You	_	PRP	PRP	_	2	nsubj	_	_	L
+1	You	_	PRP	PRP	_	2	nsubj	_	_	N
 2	say	_	VBP	VBP	_	0	ROOT	_	_	S
 3	they	_	PRP	PRP	_	4	nsubj	_	_	S
 4	're	_	VBP	VBP	_	2	ccomp	_	_	_
@@ -35,7 +35,7 @@
 7	pipeline	_	NN	NN	_	5	pobj	_	_	S
 8	?	_	.	.	_	2	punct	_	_	_
 
-1	Border	_	NNP	NNP	_	5	nn	_	_	L
+1	Border	_	NNP	NNP	_	5	nn	_	_	N
 2	police	_	NN	NN	_	5	nn	_	_	S
 3	commander	_	NN	NN	_	5	nn	_	_	S
 4	Abdul	_	NNP	NNP	_	5	nn	_	_	S
@@ -57,7 +57,7 @@
 20	village	_	NN	NN	_	17	pobj	_	_	S
 21	.	_	.	.	_	6	punct	_	_	_
 
-1	Fourth	_	JJ	JJ	_	3	amod	_	_	L
+1	Fourth	_	JJ	JJ	_	3	amod	_	_	N
 2	quarter	_	NN	NN	_	3	nn	_	_	S
 3	production	_	NN	NN	_	5	nsubjpass	_	_	S
 4	is	_	VBZ	VBZ	_	5	auxpass	_	_	S
@@ -69,7 +69,7 @@
 10	ounces	_	NNS	NNS	_	8	pobj	_	_	S
 11	.	_	.	.	_	5	punct	_	_	_
 
-1	Minor	_	NNP	NNP	_	2	nn	_	_	L
+1	Minor	_	NNP	NNP	_	2	nn	_	_	N
 2	scuffling	_	NN	NN	_	3	nsubj	_	_	S
 3	broke	_	VBD	VBD	_	0	ROOT	_	_	S
 4	out	_	RP	RP	_	3	prt	_	_	S
@@ -82,7 +82,7 @@
 11	groups	_	NNS	NNS	_	9	dobj	_	_	S
 12	.	_	.	.	_	3	punct	_	_	_
 
-1	According	_	VBG	VBG	_	18	prep	_	_	L
+1	According	_	VBG	VBG	_	18	prep	_	_	N
 2	to	_	TO	TO	_	1	pcomp	_	_	S
 3	Facebook	_	NNP	NNP	_	2	pobj	_	_	S
 4	,	_	,	,	_	3	punct	_	_	_
@@ -107,7 +107,7 @@
 23	users	_	NNS	NNS	_	18	dobj	_	_	S
 24	.	_	.	.	_	18	punct	_	_	_
 
-1	Among	_	IN	IN	_	10	prep	_	_	L
+1	Among	_	IN	IN	_	10	prep	_	_	N
 2	those	_	DT	DT	_	1	pobj	_	_	S
 3	leaning	_	VBG	VBG	_	2	partmod	_	_	S
 4	toward	_	IN	IN	_	3	prep	_	_	S
@@ -151,19 +151,19 @@
 42	governing	_	NN	NN	_	40	pobj	_	_	S
 43	.	_	.	.	_	10	punct	_	_	_
 
-1	Both	_	DT	DT	_	2	det	_	_	L
+1	Both	_	DT	DT	_	2	det	_	_	N
 2	teams	_	NNS	NNS	_	3	nsubj	_	_	S
 3	have	_	VBP	VBP	_	0	ROOT	_	_	S
 4	97	_	CD	CD	_	5	num	_	_	S
 5	points	_	NNS	NNS	_	3	dobj	_	_	S
 6	.	_	.	.	_	3	punct	_	_	_
 
-1	Star-Banner	_	NNP	NNP	_	2	nsubj	_	_	L
+1	Star-Banner	_	NNP	NNP	_	2	nsubj	_	_	N
 2	reported	_	VBD	VBD	_	0	ROOT	_	_	S
 3	Tuesday	_	NNP	NNP	_	2	tmod	_	_	S
 4	.	_	.	.	_	2	punct	_	_	_
 
-1	Harry	_	NNP	NNP	_	2	nn	_	_	L
+1	Harry	_	NNP	NNP	_	2	nn	_	_	N
 2	Redknapp	_	NNP	NNP	_	9	nsubj	_	_	S
 3	,	_	,	,	_	2	punct	_	_	_
 4	the	_	DT	DT	_	6	det	_	_	S
@@ -183,7 +183,7 @@
 18	different	_	JJ	JJ	_	9	ccomp	_	_	S
 19	.	_	.	.	_	9	punct	_	_	_
 
-1	The	_	DT	DT	_	3	det	_	_	L
+1	The	_	DT	DT	_	3	det	_	_	N
 2	US	_	NNP	NNP	_	3	nn	_	_	S
 3	uptick	_	NN	NN	_	4	nsubj	_	_	S
 4	mirrors	_	VBZ	VBZ	_	0	ROOT	_	_	S
@@ -198,7 +198,7 @@
 13	world	_	NN	NN	_	11	pobj	_	_	S
 14	.	_	.	.	_	4	punct	_	_	_
 
-1	Although	_	IN	IN	_	4	mark	_	_	L
+1	Although	_	IN	IN	_	4	mark	_	_	N
 2	satellite	_	NN	NN	_	3	nn	_	_	S
 3	television	_	NN	NN	_	4	nsubj	_	_	S
 4	has	_	VBZ	VBZ	_	17	advcl	_	_	S
@@ -220,7 +220,7 @@
 20	video-on-demand	_	NN	NN	_	19	dobj	_	_	S
 21	.	_	.	.	_	17	punct	_	_	_
 
-1	Our	_	PRP$	PRP$	_	3	poss	_	_	L
+1	Our	_	PRP$	PRP$	_	3	poss	_	_	N
 2	comfortable	_	JJ	JJ	_	3	amod	_	_	S
 3	room	_	NN	NN	_	4	nsubj	_	_	S
 4	feels	_	VBZ	VBZ	_	0	ROOT	_	_	S
@@ -241,7 +241,7 @@
 19	it	_	PRP	PRP	_	18	pobj	_	_	S
 20	.	_	.	.	_	4	punct	_	_	_
 
-1	They	_	PRP	PRP	_	3	nsubj	_	_	L
+1	They	_	PRP	PRP	_	3	nsubj	_	_	N
 2	also	_	RB	RB	_	3	advmod	_	_	S
 3	require	_	VBP	VBP	_	0	ROOT	_	_	S
 4	a	_	DT	DT	_	6	det	_	_	S
@@ -249,7 +249,7 @@
 6	inhale	_	NN	NN	_	3	dobj	_	_	S
 7	.	_	.	.	_	3	punct	_	_	_
 
-1	Her	_	PRP$	PRP$	_	2	poss	_	_	L
+1	Her	_	PRP$	PRP$	_	2	poss	_	_	N
 2	ring	_	NN	NN	_	4	nsubjpass	_	_	S
 3	was	_	VBD	VBD	_	4	auxpass	_	_	S
 4	found	_	VBN	VBN	_	0	ROOT	_	_	S
@@ -258,7 +258,7 @@
 7	car	_	NN	NN	_	5	pobj	_	_	S
 8	.	_	.	.	_	4	punct	_	_	_
 
-1	In	_	IN	IN	_	12	prep	_	_	L
+1	In	_	IN	IN	_	12	prep	_	_	N
 2	the	_	DT	DT	_	4	det	_	_	S
 3	past	_	JJ	JJ	_	4	amod	_	_	S
 4	year	_	NN	NN	_	1	pobj	_	_	S
@@ -278,7 +278,7 @@
 18	evictions	_	NNS	NNS	_	16	dobj	_	_	S
 19	.	_	.	.	_	12	punct	_	_	_
 
-1	A	_	DT	DT	_	3	det	_	_	L
+1	A	_	DT	DT	_	3	det	_	_	N
 2	23-year-old	_	JJ	JJ	_	3	amod	_	_	S
 3	man	_	NN	NN	_	6	nsubjpass	_	_	S
 4	has	_	VBZ	VBZ	_	6	aux	_	_	S
@@ -300,7 +300,7 @@
 20	Hertfordshire	_	NNP	NNP	_	19	pobj	_	_	S
 21	.	_	.	.	_	6	punct	_	_	_
 
-1	But	_	CC	CC	_	10	cc	_	_	L
+1	But	_	CC	CC	_	10	cc	_	_	N
 2	the	_	DT	DT	_	3	det	_	_	S
 3	sustainability	_	NN	NN	_	10	nsubj	_	_	S
 4	of	_	IN	IN	_	3	prep	_	_	S
@@ -312,7 +312,7 @@
 10	dubious	_	JJ	JJ	_	0	ROOT	_	_	S
 11	.	_	.	.	_	10	punct	_	_	_
 
-1	They	_	PRP	PRP	_	2	nsubj	_	_	L
+1	They	_	PRP	PRP	_	2	nsubj	_	_	N
 2	spoke	_	VBD	VBD	_	0	ROOT	_	_	S
 3	to	_	TO	TO	_	2	prep	_	_	S
 4	the	_	DT	DT	_	5	det	_	_	S
@@ -322,14 +322,14 @@
 8	Liss	_	NNP	NNP	_	3	pobj	_	_	S
 9	.	_	.	.	_	2	punct	_	_	_
 
-1	That	_	DT	DT	_	2	nsubj	_	_	L
+1	That	_	DT	DT	_	2	nsubj	_	_	N
 2	includes	_	VBZ	VBZ	_	0	ROOT	_	_	S
 3	me	_	PRP	PRP	_	2	dobj	_	_	S
 4	,	_	,	,	_	2	punct	_	_	_
 5	too	_	RB	RB	_	2	advmod	_	_	S
 6	.	_	.	.	_	2	punct	_	_	_
 
-1	The	_	DT	DT	_	2	det	_	_	L
+1	The	_	DT	DT	_	2	det	_	_	N
 2	name	_	NN	NN	_	9	nsubj	_	_	S
 3	of	_	IN	IN	_	2	prep	_	_	S
 4	Rachel	_	NNP	NNP	_	5	nn	_	_	S
@@ -342,7 +342,7 @@
 11	all	_	DT	DT	_	10	det	_	_	S
 12	.	_	.	.	_	9	punct	_	_	_
 
-1	If	_	IN	IN	_	3	mark	_	_	L
+1	If	_	IN	IN	_	3	mark	_	_	N
 2	you	_	PRP	PRP	_	3	nsubj	_	_	S
 3	prefer	_	VBP	VBP	_	19	advcl	_	_	S
 4	to	_	TO	TO	_	5	aux	_	_	S
@@ -369,7 +369,7 @@
 25	Vacations	_	NNPS	NNPS	_	23	pobj	_	_	S
 26	.	_	.	.	_	19	punct	_	_	_
 
-1	The	_	DT	DT	_	3	det	_	_	L
+1	The	_	DT	DT	_	3	det	_	_	N
 2	Afghan	_	JJ	JJ	_	3	amod	_	_	S
 3	government	_	NN	NN	_	6	nsubj	_	_	S
 4	also	_	RB	RB	_	6	advmod	_	_	S
@@ -392,7 +392,7 @@
 21	wheat	_	NN	NN	_	18	dep	_	_	S
 22	.	_	.	.	_	6	punct	_	_	_
 
-1	The	_	DT	DT	_	3	det	_	_	L
+1	The	_	DT	DT	_	3	det	_	_	N
 2	most	_	RBS	RBS	_	3	advmod	_	_	S
 3	striking	_	JJ	JJ	_	6	nsubj	_	_	S
 4	is	_	VBZ	VBZ	_	6	cop	_	_	S
@@ -407,7 +407,7 @@
 13	banks	_	NNS	NNS	_	11	pobj	_	_	S
 14	.	_	.	.	_	6	punct	_	_	_
 
-1	Philo	_	NNP	NNP	_	4	nsubj	_	_	L
+1	Philo	_	NNP	NNP	_	4	nsubj	_	_	N
 2	did	_	VBD	VBD	_	4	aux	_	_	S
 3	not	_	RB	RB	_	4	neg	_	_	S
 4	mention	_	VB	VB	_	0	ROOT	_	_	S
@@ -433,7 +433,7 @@
 24	group	_	NN	NN	_	22	pobj	_	_	S
 25	.	_	.	.	_	4	punct	_	_	_
 
-1	Created	_	VBN	VBN	_	8	partmod	_	_	L
+1	Created	_	VBN	VBN	_	8	partmod	_	_	N
 2	in	_	IN	IN	_	1	prep	_	_	S
 3	1996	_	CD	CD	_	2	pobj	_	_	S
 4	,	_	,	,	_	8	punct	_	_	_
@@ -459,7 +459,7 @@
 24	prices	_	NNS	NNS	_	21	conj	_	_	S
 25	.	_	.	.	_	8	punct	_	_	_
 
-1	Prosecutors	_	NNS	NNS	_	2	nsubj	_	_	L
+1	Prosecutors	_	NNS	NNS	_	2	nsubj	_	_	N
 2	said	_	VBD	VBD	_	0	ROOT	_	_	S
 3	some	_	DT	DT	_	16	nsubjpass	_	_	S
 4	of	_	IN	IN	_	3	prep	_	_	S
@@ -483,7 +483,7 @@
 22	traffickers	_	NNS	NNS	_	20	pobj	_	_	S
 23	.	_	.	.	_	2	punct	_	_	_
 
-1	Margaret	_	NNP	NNP	_	2	nn	_	_	L
+1	Margaret	_	NNP	NNP	_	2	nn	_	_	N
 2	Rutherford	_	NNP	NNP	_	11	nsubj	_	_	S
 3	,	_	,	,	_	2	punct	_	_	_
 4	chairwoman	_	NN	NN	_	2	appos	_	_	S
@@ -507,7 +507,7 @@
 22	underground	_	RB	RB	_	21	advmod	_	_	S
 23	.	_	.	.	_	11	punct	_	_	_
 
-1	Amid	_	IN	IN	_	3	mark	_	_	L
+1	Amid	_	IN	IN	_	3	mark	_	_	N
 2	US	_	PRP	PRP	_	3	nsubj	_	_	S
 3	fears	_	VBZ	VBZ	_	16	advcl	_	_	S
 4	that	_	IN	IN	_	7	mark	_	_	S
@@ -538,7 +538,7 @@
 29	year	_	NN	NN	_	25	tmod	_	_	S
 30	.	_	.	.	_	16	punct	_	_	_
 
-1	He	_	PRP	PRP	_	3	nsubj	_	_	L
+1	He	_	PRP	PRP	_	3	nsubj	_	_	N
 2	then	_	RB	RB	_	3	advmod	_	_	S
 3	provided	_	VBD	VBD	_	0	ROOT	_	_	S
 4	Marshal	_	NNP	NNP	_	5	nn	_	_	S
@@ -548,7 +548,7 @@
 8	number	_	NN	NN	_	3	dobj	_	_	S
 9	.	_	.	.	_	3	punct	_	_	_
 
-1	Tech	_	NNP	NNP	_	2	nn	_	_	L
+1	Tech	_	NNP	NNP	_	2	nn	_	_	N
 2	credits	_	NNS	NNS	_	5	nsubj	_	_	S
 3	are	_	VBP	VBP	_	5	cop	_	_	S
 4	just	_	RB	RB	_	5	advmod	_	_	S
@@ -562,7 +562,7 @@
 12	show	_	NN	NN	_	6	pcomp	_	_	S
 13	.	_	.	.	_	5	punct	_	_	_
 
-1	But	_	CC	CC	_	8	cc	_	_	L
+1	But	_	CC	CC	_	8	cc	_	_	N
 2	my	_	PRP$	PRP$	_	4	poss	_	_	S
 3	eldest	_	JJS	JJS	_	4	amod	_	_	S
 4	daughter	_	NN	NN	_	8	nsubj	_	_	S
@@ -572,7 +572,7 @@
 8	did	_	VBD	VBD	_	0	ROOT	_	_	S
 9	.	_	.	.	_	8	punct	_	_	_
 
-1	The	_	DT	DT	_	2	det	_	_	L
+1	The	_	DT	DT	_	2	det	_	_	N
 2	department	_	NN	NN	_	4	nsubj	_	_	S
 3	has	_	VBZ	VBZ	_	4	aux	_	_	S
 4	spent	_	VBN	VBN	_	0	ROOT	_	_	S
@@ -587,7 +587,7 @@
 13	far	_	RB	RB	_	4	advmod	_	_	S
 14	.	_	.	.	_	4	punct	_	_	_
 
-1	Picoplatin	_	NNP	NNP	_	3	nsubjpass	_	_	L
+1	Picoplatin	_	NNP	NNP	_	3	nsubjpass	_	_	N
 2	is	_	VBZ	VBZ	_	3	auxpass	_	_	S
 3	designed	_	VBN	VBN	_	0	ROOT	_	_	S
 4	to	_	TO	TO	_	5	aux	_	_	S
@@ -615,7 +615,7 @@
 26	formulations	_	NNS	NNS	_	22	conj	_	_	S
 27	.	_	.	.	_	3	punct	_	_	_
 
-1	Only	_	RB	RB	_	4	advmod	_	_	L
+1	Only	_	RB	RB	_	4	advmod	_	_	N
 2	you	_	PRP	PRP	_	4	nsubj	_	_	S
 3	can	_	MD	MD	_	4	aux	_	_	S
 4	decide	_	VB	VB	_	0	ROOT	_	_	S
@@ -624,7 +624,7 @@
 7	important	_	JJ	JJ	_	4	ccomp	_	_	S
 8	.	_	.	.	_	4	punct	_	_	_
 
-1	Lt.	_	NNP	NNP	_	4	nn	_	_	L
+1	Lt.	_	NNP	NNP	_	4	nn	_	_	N
 2	Col.	_	NNP	NNP	_	4	nn	_	_	S
 3	David	_	NNP	NNP	_	4	nn	_	_	S
 4	Accetta	_	NNP	NNP	_	14	nsubj	_	_	S
@@ -646,7 +646,7 @@
 20	report	_	NN	NN	_	18	dobj	_	_	S
 21	.	_	.	.	_	14	punct	_	_	_
 
-1	The	_	DT	DT	_	3	det	_	_	L
+1	The	_	DT	DT	_	3	det	_	_	N
 2	four	_	CD	CD	_	3	num	_	_	S
 3	teams	_	NNS	NNS	_	14	nsubj	_	_	S
 4	that	_	WDT	WDT	_	6	nsubj	_	_	S
@@ -670,7 +670,7 @@
 22	Carolina	_	NNP	NNP	_	14	conj	_	_	S
 23	.	_	.	.	_	14	punct	_	_	_
 
-1	Speaking	_	VBG	VBG	_	8	partmod	_	_	L
+1	Speaking	_	VBG	VBG	_	8	partmod	_	_	N
 2	to	_	TO	TO	_	1	prep	_	_	S
 3	reporters	_	NNS	NNS	_	2	pobj	_	_	S
 4	,	_	,	,	_	8	punct	_	_	_
@@ -693,7 +693,7 @@
 21	legislation	_	NN	NN	_	18	pobj	_	_	S
 22	.	_	.	.	_	8	punct	_	_	_
 
-1	'	_	''	''	_	10	punct	_	_	L
+1	'	_	''	''	_	10	punct	_	_	N
 2	But	_	CC	CC	_	10	cc	_	_	_
 3	with	_	IN	IN	_	10	prep	_	_	S
 4	the	_	DT	DT	_	5	det	_	_	S
@@ -707,7 +707,7 @@
 12	.	_	.	.	_	10	punct	_	_	_
 13	'	_	''	''	_	10	punct	_	_	_
 
-1	Mr	_	NNP	NNP	_	2	nn	_	_	L
+1	Mr	_	NNP	NNP	_	2	nn	_	_	N
 2	Oubridge	_	NNP	NNP	_	3	nsubj	_	_	S
 3	said	_	VBD	VBD	_	0	ROOT	_	_	S
 4	when	_	WRB	WRB	_	8	advmod	_	_	S
@@ -733,7 +733,7 @@
 24	injunction	_	NN	NN	_	21	pobj	_	_	S
 25	.	_	.	.	_	3	punct	_	_	_
 
-1	A	_	DT	DT	_	2	det	_	_	L
+1	A	_	DT	DT	_	2	det	_	_	N
 2	number	_	NN	NN	_	6	nsubj	_	_	S
 3	of	_	IN	IN	_	2	prep	_	_	S
 4	ministers	_	NNS	NNS	_	3	pobj	_	_	S
@@ -774,7 +774,7 @@
 39	minister	_	NN	NN	_	34	appos	_	_	S
 40	.	_	.	.	_	6	punct	_	_	_
 
-1	An	_	DT	DT	_	4	det	_	_	L
+1	An	_	DT	DT	_	4	det	_	_	N
 2	enticingly	_	RB	RB	_	3	advmod	_	_	S
 3	big	_	JJ	JJ	_	4	amod	_	_	S
 4	button	_	NN	NN	_	10	nsubj	_	_	S
@@ -791,7 +791,7 @@
 15	hinge	_	NN	NN	_	10	xcomp	_	_	S
 16	.	_	.	.	_	10	punct	_	_	_
 
-1	After	_	IN	IN	_	8	prep	_	_	L
+1	After	_	IN	IN	_	8	prep	_	_	N
 2	an	_	DT	DT	_	5	det	_	_	S
 3	oustanding	_	JJ	JJ	_	5	amod	_	_	S
 4	opening	_	NN	NN	_	5	nn	_	_	S
@@ -817,7 +817,7 @@
 24	72	_	CD	CD	_	21	pobj	_	_	S
 25	.	_	.	.	_	8	punct	_	_	_
 
-1	We	_	PRP	PRP	_	2	nsubj	_	_	L
+1	We	_	PRP	PRP	_	2	nsubj	_	_	N
 2	made	_	VBD	VBD	_	0	ROOT	_	_	S
 3	mistakes	_	NNS	NNS	_	2	dobj	_	_	S
 4	in	_	IN	IN	_	2	prep	_	_	S
@@ -838,7 +838,7 @@
 19	end	_	NN	NN	_	17	pobj	_	_	S
 20	.	_	.	.	_	2	punct	_	_	_
 
-1	This	_	DT	DT	_	3	det	_	_	L
+1	This	_	DT	DT	_	3	det	_	_	N
 2	latest	_	JJS	JJS	_	3	amod	_	_	S
 3	incident	_	NN	NN	_	7	nsubj	_	_	S
 4	is	_	VBZ	VBZ	_	7	cop	_	_	S
@@ -858,7 +858,7 @@
 18	details	_	NNS	NNS	_	15	dobj	_	_	S
 19	.	_	.	.	_	7	punct	_	_	_
 
-1	NebuAd	_	NNP	NNP	_	2	nsubj	_	_	L
+1	NebuAd	_	NNP	NNP	_	2	nsubj	_	_	N
 2	confirmed	_	VBD	VBD	_	0	ROOT	_	_	S
 3	Friday	_	NNP	NNP	_	2	tmod	_	_	S
 4	that	_	IN	IN	_	7	mark	_	_	S
@@ -873,7 +873,7 @@
 13	comment	_	NN	NN	_	11	dobj	_	_	S
 14	.	_	.	.	_	2	punct	_	_	_
 
-1	Needless	_	JJ	JJ	_	6	ccomp	_	_	L
+1	Needless	_	JJ	JJ	_	6	ccomp	_	_	N
 2	to	_	TO	TO	_	3	aux	_	_	S
 3	say	_	VB	VB	_	1	xcomp	_	_	S
 4	,	_	,	,	_	6	punct	_	_	_
@@ -887,7 +887,7 @@
 12	down	_	RP	RP	_	11	prt	_	_	S
 13	.	_	.	.	_	6	punct	_	_	_
 
-1	For	_	IN	IN	_	18	prep	_	_	L
+1	For	_	IN	IN	_	18	prep	_	_	N
 2	Judy	_	NNP	NNP	_	3	nn	_	_	S
 3	John-Baptiste	_	NNP	NNP	_	1	pobj	_	_	S
 4	,	_	,	,	_	3	punct	_	_	_
@@ -913,7 +913,7 @@
 24	offers	_	VBZ	VBZ	_	22	rcmod	_	_	S
 25	.	_	.	.	_	18	punct	_	_	_
 
-1	Russ	_	NNP	NNP	_	2	nn	_	_	L
+1	Russ	_	NNP	NNP	_	2	nn	_	_	N
 2	Dixon	_	NNP	NNP	_	7	nsubj	_	_	S
 3	,	_	,	,	_	2	punct	_	_	_
 4	an	_	DT	DT	_	5	det	_	_	S
@@ -938,7 +938,7 @@
 23	pitcher	_	NN	NN	_	21	pobj	_	_	S
 24	.	_	.	.	_	7	punct	_	_	_
 
-1	Mr.	_	NNP	NNP	_	2	nn	_	_	L
+1	Mr.	_	NNP	NNP	_	2	nn	_	_	N
 2	Gore	_	NNP	NNP	_	3	nsubj	_	_	S
 3	was	_	VBD	VBD	_	0	ROOT	_	_	S
 4	not	_	RB	RB	_	3	neg	_	_	S
@@ -952,7 +952,7 @@
 12	frequently	_	RB	RB	_	10	advmod	_	_	S
 13	.	_	.	.	_	3	punct	_	_	_
 
-1	The	_	DT	DT	_	2	det	_	_	L
+1	The	_	DT	DT	_	2	det	_	_	N
 2	lawsuit	_	NN	NN	_	4	nsubj	_	_	S
 3	also	_	RB	RB	_	4	advmod	_	_	S
 4	names	_	VBD	VBD	_	0	ROOT	_	_	S
@@ -972,7 +972,7 @@
 18	Wal-Mart	_	NNP	NNP	_	17	pobj	_	_	S
 19	.	_	.	.	_	4	punct	_	_	_
 
-1	Rudy	_	NNP	NNP	_	2	nn	_	_	L
+1	Rudy	_	NNP	NNP	_	2	nn	_	_	N
 2	Crutchfield	_	NNP	NNP	_	9	nsubj	_	_	S
 3	and	_	CC	CC	_	2	cc	_	_	S
 4	Steve	_	NNP	NNP	_	5	nn	_	_	S
@@ -990,7 +990,7 @@
 16	School	_	NNP	NNP	_	13	pobj	_	_	S
 17	.	_	.	.	_	9	punct	_	_	_
 
-1	Earlier	_	RBR	RBR	_	3	advmod	_	_	L
+1	Earlier	_	RBR	RBR	_	3	advmod	_	_	N
 2	this	_	DT	DT	_	3	det	_	_	S
 3	month	_	NN	NN	_	6	tmod	_	_	S
 4	,	_	,	,	_	6	punct	_	_	_
