@@ -73,7 +73,7 @@ function expand(s::State, act::Int)
     elseif act == reducel
         return transit(s, act, s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl)
     elseif act == reducer
-        return transit(s, act, s.left.top, s.right, s.left.left, s.left.lchild, s, s.lsibl, s)
+        return transit(s, act, s.left.top, s.right, s.left.left, s.left.lchild, s, s.left.lsibl, s.left)
     else
         throw("Invalid action: $(act).")
     end
@@ -123,18 +123,16 @@ end
 ################## feature function ###############
 ###################################################
 
-# function tokenat(s::State, syms::Symbol...)
-#     if length(syms) == 1
-#         return tokenat(s, s.(syms[1]))
-#     else
-#         tok = tokenat(s, s.(syms[1]))
-#         if tok == rootword
-#             return tok
-#         else
-#             tokenat(s.(syms[1]), syms[2:end])
-#         end
-#     end
-# end
+function tokenat(s::State, syms::Symbol...)
+    head, tail = syms[1], syms[2:end]
+    isempty(tail) && return tokenat(s, s.(head))
+    tok = tokenat(s, s.(head))
+    if tok.word == rootword.word
+        return tok
+    else
+        return tokenat(s.(head), tail...)
+    end
+end
 
 function featuregen(s::State)
     n0  = tokenat(s, s.right)
@@ -144,7 +142,7 @@ function featuregen(s::State)
     s0r = tokenat(s, s.rchild)
     s0l2 = tokenat(s, s.lsibl) # s0's lmost child's sibling
     s0r2 = tokenat(s, s.rsibl)
-    # s02l = tokenat(s, :lchild, :lchild)
+    s02l = tokenat(s, :lchild, :lchild)
     if s.left == nothing
         s1, s2, s1l, s1r = rootword, rootword, rootword, rootword
     else
