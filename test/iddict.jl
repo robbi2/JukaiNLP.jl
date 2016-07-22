@@ -7,6 +7,7 @@ id3 = push!(dict, "abc")
 @test id1 == 1
 @test id2 == 2
 @test id1 == id3
+@test dict["abc"] == 1
 
 @test length(dict) == 2
 

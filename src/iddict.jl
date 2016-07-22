@@ -1,14 +1,19 @@
 """
     IdDict{T}
 
-A dictionary for converting item::T into integer id.
+A dictionary for converting key::T into integer id.
 
 ## 👉 Example
 ```julia
 dict = IdDict{AbstractString}()
-id1 = push!(dict, "abc")
-id2 = push!(dict, "def")
-id3 = push!(dict, "abc")
+push!(dict, "abc") == 1
+push!(dict, "def") == 2
+push!(dict, "abc") == 1
+dict["abc"] == 1
+
+getkey(dict, id1) == "abc"
+
+count(dict, id1) == 2
 ```
 """
 type IdDict{T}
