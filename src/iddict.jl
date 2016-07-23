@@ -1,48 +1,62 @@
+"""
+    IdDict{T}
+
+A dictionary for converting key::T into integer id.
+
+## 👉 Example
+```julia
+dict = IdDict{AbstractString}()
+push!(dict, "abc") == 1
+push!(dict, "def") == 2
+push!(dict, "abc") == 1
+dict["abc"] == 1
+
+getkey(dict, id1) == "abc"
+
+count(dict, id1) == 2
+```
+"""
 type IdDict{T}
-  keyid::Dict{T,Int}
-  idkey::Vector{T}
-  idcount::Vector{Int}
+    key2id::Dict{T,Int}
+    id2key::Vector{T}
+    id2count::Vector{Int}
+
+    IdDict() = new(Dict{T,Int}(), T[], Int[])
+end
+IdDict() = IdDict{Any}()
+
+"""
+    IdDict(path)
+
+Construct IdDict from a file.
+"""
+function IdDict(T::Type, path)
+    d = IdDict{T}()
+    for line in open(readlines, path)
+        push!(d, T(chomp(line)))
+    end
+    d
 end
 
-IdDict{T}(::Type{T}) = IdDict(Dict{T,Int}(), T[], Int[])
-IdDict() = IdDict(Any)
+Base.count(d::IdDict, id::Int) = d.id2count[id]
 
-function IdDict(path)
-  d = IdDict(AbstractString)
-  for line in open(readlines, path)
-    add!(d, chomp(line))
-  end
-  d
-end
+Base.getkey(d::IdDict, id::Int) = d.id2key[id]
 
-Base.getindex{T}(d::IdDict{T}, key::T) = d.keyid[key]
-Base.get{T}(d::IdDict{T}, item::T, default=0) = get(d.keyid, item, default)
+Base.getindex{T}(d::IdDict{T}, key::T) = d.key2id[key]
 
-function Base.get!{T}(d::IdDict{T}, item::T)
-  haskey(d.keyid, item) || add!(d, item)
-  d.keyid[item]
-end
+Base.get{T}(d::IdDict{T}, key::T, default::Int=0) = get(d.key2id, key, default)
 
-Base.length(d::IdDict) = length(d.keyid)
+Base.length(d::IdDict) = length(d.key2id)
 
-function add!{T}(d::IdDict{T}, item::T)
-  if haskey(d.keyid, item)
-    id = d.keyid[item]
-    d.idcount[id] += 1
-  else
-    id = length(d.keyid) + 1
-    d.keyid[item] = id
-    push!(d.idkey, item)
-    push!(d.idcount, 1)
-  end
-  id
-end
-
-getcount{T}(d::IdDict{T}, id::Int) = d.idcount[id]
-
-function trim!{T}(d::IdDict{T})
-  for i = 1:length(d.idkey)
-    c = d.idcount[i]
-    c == 0 && delete!(d.keyid, d.idkey[i])
-  end
+function Base.push!{T}(d::IdDict{T}, key::T)
+    if haskey(d.key2id, key)
+        id = d.key2id[key]
+        d.id2count[id] += 1
+    else
+        id = length(d.key2id) + 1
+        d.key2id[key] = id
+        push!(d.id2key, key)
+        push!(d.id2count, 1)
+    end
+    id
 end
