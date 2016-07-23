@@ -1,6 +1,7 @@
 
 push!(LOAD_PATH, "..")
-using JukaiNLP: DepParser, Perceptron, readconll, train!, decode, evaluate, toconll
+using JukaiNLP: DepParser, Perceptron, Unlabeled, Labeled
+using JukaiNLP: readconll, train!, decode, evaluate, toconll, initmodel!
 using JLD
 using DocOpt
 
@@ -24,10 +25,13 @@ args = docopt(doc)
 if args["train"]
     worddict = args["--worddict"]
     worddict == nothing && throw("worddict must be specified for now")
-    parser = DepParser(worddict, Perceptron(zeros(1<<13,4)))
+    parser = DepParser(worddict, parsertype=Labeled)
+    # parser = DepParser(worddict, parsertype=Unlabeled)
     iter = args["--iter"] == nothing ? 20 : parse(Int, args["--iter"])
     trainfile = args["<train_path>"]
-    train!(parser, trainfile, iter=iter)
+    trainsents = readconll(parser, trainfile)
+    initmodel!(parser, Perceptron)
+    train!(parser, trainsents, iter=iter)
     save(args["<model_path>"], "parser", parser)
 
 elseif args["test"]

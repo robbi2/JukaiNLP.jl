@@ -10,7 +10,7 @@ function train!(parser::DepParser, trainsents::Doc,
         progbar && ( p = Progress(length(trainsents), 1, "", 50) )
         res = map(trainsents) do s
             next!(p)
-            s = State(s, parser.model)
+            s = State(s, parser)
             gold = beamsearch(s, 1, expandgold)
             pred = beamsearch(s, beamsize, expandpred)
             max_violation!(gold, pred,
@@ -40,7 +40,7 @@ function decode(parser::DepParser, sents::Doc; beamsize=10, progbar=true)
     progbar && ( p = Progress(length(sents), 1, "", 50) )
     map(sents) do s
         progbar && next!(p)
-        pred = State(s, parser.model)
+        pred = State(s, parser)
         beamsearch(pred, beamsize, expandpred)
     end
 end

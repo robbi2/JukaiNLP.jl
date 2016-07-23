@@ -16,11 +16,14 @@ include("accuracy.jl")
 include("io.jl")
 
 export DepParser,
+       Unlabeled,
+       Labeled,
        Perceptron,
        readconll,
        train!,
        decode,
        evaluate,
-       toconll
+       toconll,
+       initmodel!
 
 end

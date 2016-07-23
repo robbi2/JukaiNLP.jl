@@ -1,10 +1,23 @@
-const shift = 1
-const reducel = 2
-const reducer = 3
+const SHIFT = 1
+const REDUCEL = 2
+const REDUCER = 3
 
-abstract Model
+# calculates action id for labeled reduce
+# even numbers >= 2
+reducel(label::Int) = label << 1
+reducel() = REDUCEL
 
-type State
+ # odd numbers >= 3
+reducer(label::Int) = (label << 1) | 1
+reducer() = REDUCER
+
+# retrieve action type 1, 2 or 3
+actiontype(action::Int) = action == 1 ? SHIFT : 2 + (action & 1)
+
+# retrieve label id
+tolabel(action::Int) = action >> 1
+
+type State{T <: ParserType}
     step::Int
     score::Float64
     top::Int
@@ -15,28 +28,28 @@ type State
     lsibl
     rsibl
     tokens::Vector{Token}
-    model::Model
-    prev::State
+    parser::DepParser
+    prev::State{T}
     prevact::Int
     feat::Vector{Int}
 
     function State(step, score, top, right, left,
-        lchild, rchild, lsibl, rsibl, tokens, model)
+        lchild, rchild, lsibl, rsibl, tokens, parser)
         new(step, score, top, right, left,
-            lchild, rchild, lsibl, rsibl, tokens, model)
+            lchild, rchild, lsibl, rsibl, tokens, parser)
     end
 
     function State(step, score, top, right, left,
-        lchild, rchild, lsibl, rsibl, tokens, model, prev, prevact)
+        lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact)
         new(step, score, top, right, left,
-            lchild, rchild, lsibl, rsibl, tokens, model, prev, prevact)
+            lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact)
     end
 
 end
 
-function State{M<:Model}(tokens::Vector{Token}, model::M)
-    State(1, 0.0, 0, 1, nothing, nothing,
-        nothing, nothing, nothing, tokens, model)
+function State{T}(tokens::Vector{Token}, parser::DepParser{T})
+    State{T}(1, 0.0, 0, 1, nothing, nothing,
+        nothing, nothing, nothing, tokens, parser)
 end
 
 # to retrieve result
@@ -53,26 +66,55 @@ function heads(s::State)
     res
 end
 
+function labels(s::State)
+    @assert isfinal(s)
+    res = fill(-1, length(s.tokens))
+    st = s
+    while isdefined(st, :prev)
+        acttype = actiontype(st.prevact)
+        acttype == REDUCEL && ( res[st.lchild.top] = tolabel(st.prevact) )
+        acttype == REDUCER && ( res[st.rchild.top] = tolabel(st.prevact) )
+        st = st.prev
+    end
+    @assert all(h -> h >= 0, res)
+    res
+end
+
 tokenat(s::State, i::Int) = get(s.tokens, i, rootword)
 tokenat(s::State, t::State) = get(s.tokens, t.top, rootword)
 tokenat(s::State, ::Void) = rootword
+
+function tokenat(s::State, head::Symbol, tail::Symbol...)
+    if isempty(tail) || s.(head) == nothing
+        return tokenat(s, s.(head))
+    else
+        return tokenat(s.(head), tail...)
+    end
+end
+
+function labelat(s::State)
+    @assert isdefined(s, :prevact)
+    tolabel(s.prevact)
+end
 
 ###################################################
 #################### "expand"s ####################
 ###################################################
 
-function transit(s::State, act::Int, top::Int,
+function transit{T}(s::State{T}, act::Int, top::Int,
     right::Int, left, lchild, rchild, lsibl, rsibl)
-    State(s.step + 1, s.score + s.model(s, act), top, right,
-        left, lchild, rchild, lsibl, rsibl, s.tokens, s.model, s, act)
+    score = s.score + s.parser.model(s, act)
+    State{T}(s.step + 1, score, top, right, left, lchild,
+        rchild, lsibl, rsibl, s.tokens, s.parser, s, act)
 end
 
 function expand(s::State, act::Int)
-    if act == shift
+    acttype = actiontype(act)
+    if acttype == SHIFT
         return transit(s, act, s.right, s.right+1, s, nothing, nothing, nothing, nothing)
-    elseif act == reducel
+    elseif acttype == REDUCEL
         return transit(s, act, s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl)
-    elseif act == reducer
+    elseif acttype == REDUCER
         return transit(s, act, s.left.top, s.right, s.left.left, s.left.lchild, s, s.left.lsibl, s.left)
     else
         throw("Invalid action: $(act).")
@@ -88,61 +130,78 @@ reducible(s::State) = s.left != nothing
 # check if the state is final state
 isfinal(s::State) = bufferisempty(s) && !reducible(s)
 
-function expandpred(s::State)
+function expand_reduce_state!(res::Vector{State{Labeled}}, s::State{Labeled}, act::Function)
+    for label in 1:length(s.parser.labels)
+        push!(res, expand(s, act(label)))
+    end
+end
+
+function expand_reduce_state!(res::Vector{State{Unlabeled}}, s::State{Unlabeled}, act::Function)
+    push!(res, expand(s, act()))
+end
+
+function expandpred{T}(s::State{T})
     isfinal(s) && return []
-    res = State[]
+    res = State{T}[]
     if reducible(s)
-        push!(res, expand(s, reducer))
+        expand_reduce_state!(res, s, reducer)
         if s.left.top != 0
-            push!(res, expand(s, reducel))
+            expand_reduce_state!(res, s, reducel)
         end
     end
-    bufferisempty(s) || push!(res, expand(s, shift))
+    bufferisempty(s) || push!(res, expand(s, SHIFT))
     res
+end
+
+function expand_reduce_state(s::State{Unlabeled}, act::Function)
+    expand(s, act())
+end
+
+function expand_reduce_state(s::State{Labeled}, act::Function)
+    child = act == reducel ? s.left.top :
+            act == reducer ? s.top :
+            throw("Action must be reduce")
+    expand(s, act(tokenat(s, child).label))
 end
 
 function expandgold(s::State)
     isfinal(s) && return []
     if !reducible(s)
-        return [expand(s, shift)]
+        return [expand(s, SHIFT)]
     else
         s0 = tokenat(s, s.top)
-        s1 = tokenat(s, s.left.top)
+        s1 = tokenat(s, s.left)
         if s1.head == s.top
-            return [expand(s, reducel)]
+            return [expand_reduce_state(s, reducel)]
         elseif s0.head == s.left.top
             if all(i -> tokenat(s, i).head != s.top, s.right:length(s.tokens))
-                return [expand(s, reducer)]
+                return [expand_reduce_state(s, reducer)]
             end
         end
     end
-    return [expand(s, shift)]
+    return [expand(s, SHIFT)]
 end
 
 ###################################################
 ################## feature function ###############
 ###################################################
 
-function tokenat(s::State, syms::Symbol...)
-    head, tail = syms[1], syms[2:end]
-    isempty(tail) && return tokenat(s, s.(head))
-    tok = tokenat(s, s.(head))
-    if tok.word == rootword.word
-        return tok
-    else
-        return tokenat(s.(head), tail...)
-    end
-end
-
 function featuregen(s::State)
+    # n0  = tokenat(s, s.right)
+    # n1  = tokenat(s, s.right+1)
+    # s0  = tokenat(s, s.top)
+    # s0l = tokenat(s, :lchild)
+    # s0r = tokenat(s, :rchild)
+    # s1 = tokenat(s, :left, :top)
+    # s2 = tokenat(s, :left, :left)
+    # s1l = tokenat(s, :left, :lchild)
+    # s1r = tokenat(s, :left, :rchild)
+
     n0  = tokenat(s, s.right)
     n1  = tokenat(s, s.right+1)
     s0  = tokenat(s, s.top)
     s0l = tokenat(s, s.lchild)
     s0r = tokenat(s, s.rchild)
-    s0l2 = tokenat(s, s.lsibl) # s0's lmost child's sibling
-    s0r2 = tokenat(s, s.rsibl)
-    s02l = tokenat(s, :lchild, :lchild)
     if s.left == nothing
         s1, s2, s1l, s1r = rootword, rootword, rootword, rootword
     else
@@ -151,7 +210,7 @@ function featuregen(s::State)
         s1l = tokenat(s, s.left.lchild)
         s1r = tokenat(s, s.left.rchild)
     end
-    len = size(s.model.weights, 1) # used in @template macro
+    len = size(s.parser.model.weights, 1) # used in @template macro
     @template begin
         # template (1)
         (s0.word,)
