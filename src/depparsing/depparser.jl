@@ -16,10 +16,10 @@ type DepParser{T <: ParserType}
     end
 end
 
-function DepParser{T <: ParserType}(path::AbstractString; parsertype::Type{T}=Unlabeled)
-    words = IdDict(path)
-    tags = IdDict(AbstractString)
-    labels = IdDict(AbstractString)
+function DepParser{T <: ParserType}(parsertype::Type{T}, path::AbstractString)
+    words = IdDict(AbstractString, path)
+    tags = IdDict{AbstractString}()
+    labels = IdDict{AbstractString}()
     DepParser{T}(words, tags, labels, parsertype)
 end
 

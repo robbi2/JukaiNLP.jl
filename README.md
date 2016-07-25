@@ -37,9 +37,9 @@ map(r -> str[r], doc[1])
 using JukaiNLP: Perceptron, DepParser, Unlabeled, Labeled
 using JukaiNLP: readconll, train!, decode, evaluate
 # parser for unlabeled dependency tree
-parser = DepParser("dict/en-word_nyt.dict", parsertype=Unlabeled)
+parser = DepParser(Unlabeled, "dict/en-word_nyt.dict")
 # parser for labeled dependency tree
-parser = DepParser("dict/en-word_nyt.dict", parsertype=Labeled)
+parser = DepParser(Labeled, "dict/en-word_nyt.dict")
 sents = readconll(parser, "corpus/mini-training-set.conll")
 initmodel!(parser, Perceptron)
 n = div(length(sents), 10) * 8

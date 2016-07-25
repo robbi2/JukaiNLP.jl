@@ -20,9 +20,9 @@ function readconll(parser::DepParser, path::AbstractString)
             word, tag, head, label = items[2], items[4], items[7], items[8]
             word = replace(lowercase(word), r"\d", "0")
             wordid = get(parser.words, word, 1) # words[1] == UNKNOWN
-            tagid = get!(parser.tags, tag)
+            tagid = push!(parser.tags, tag)
             headid = parse(Int, head)
-            labelid = get!(parser.labels, label)
+            labelid = push!(parser.labels, label)
             t = Token(wordid, tagid, headid, labelid)
             push!(doc[end], t)
         end

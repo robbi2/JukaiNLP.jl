@@ -8,31 +8,34 @@ macro test(cond)
 end
 
 push!(LOAD_PATH, "src")
-using JukaiNLP: Perceptron, DepParser, readconll
-using JukaiNLP.DepParsing: expandgold, State, isfinal, tokenat, stacktrace
+using JukaiNLP: Perceptron, DepParser, readconll, Unlabeled, Labeled
+using JukaiNLP.DepParsing: expandgold, State, isfinal, tokenat, stacktrace, tolabel, initmodel!, labelat, print, stacktrace
 using TransitionParser: beamsearch
 
-parser = DepParser("dict/en-word_nyt.dict", Perceptron(zeros(100, 3)))
+parser = DepParser("dict/en-word_nyt.dict", parsertype=Labeled)
 sents = readconll(parser, "corpus/mini-training-set.conll")
-s = beamsearch(State(sents[1], parser.model), 1, expandgold)
-# stacktrace(parser, s)
+initmodel!(parser, Perceptron)
+s = beamsearch(State(sents[4], parser), 1, expandgold)
+stacktrace(parser, s)
 
-tostr = parser.words.idkey
+word(w) = getkey(parser.words, w)
+label(l) = getkey(parser.labels, l)
 
 @test isfinal(s)
 @test tokenat(s, s.top).word == 0
-@test tostr[tokenat(s, s.rchild).word] == "knew"
-@test tostr[tokenat(s, :rchild, :rchild).word] == "."
-@test tostr[tokenat(s, :rchild, :lchild).word] == "i"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild).word] == "do"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :lchild).word] == "i"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :lsibl, :lchild).word] == "could"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rsibl, :rchild).word] == "properly"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rsibl, :rsibl, :rchild).word] == "it"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rchild).word] == "given"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rchild, :lchild).word] == "if"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rchild, :rchild).word] == "kind"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rchild, :rchild, :lchild).word] == "the"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rchild, :rchild, :lsibl, :lchild).word] == "right"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rchild, :rchild, :rchild).word] == "of"
-@test tostr[tokenat(s, :rchild, :rsibl, :rchild, :rchild, :rchild, :rchild, :rchild).word] == "support"
+@test word(tokenat(s, s.rchild).word) == "says"
+@test word(tokenat(s, s.rchild.lchild).word) == "raziq"
+@test word(tokenat(s, s.rchild.lchild.lchild).word) == "border"
+@test word(tokenat(s, s.rchild.lchild.lsibl.lchild).word) == "police"
+@test word(tokenat(s, s.rchild.lchild.lsibl.lsibl.lchild).word) == "commander"
+@test word(tokenat(s, s.rchild.lchild.lsibl.lsibl.lsibl.lchild).word) == "abdul"
+
+@test label(labelat(s, s.rchild)) == "ROOT"
+@test label(labelat(s, s.rchild.lsibl)) == "nsubj"
+@test label(labelat(s, s.rchild.lsibl.left.lsibl)) == "nn" # border
+@test label(labelat(s, s.rchild.lsibl.left.lsibl.lsibl)) == "nn" # police
+@test label(labelat(s, s.rchild.lsibl.left.lsibl.lsibl.lsibl)) == "nn" # commander
+@test label(labelat(s, s.rchild.lsibl.left.lsibl.lsibl.lsibl.lsibl)) == "nn" # abdul
+@test word(tokenat(s, s.rchild.lsibl.left.lsibl.lsibl.lsibl.lsibl.left).word) == "abdul" # abdul
+@test label(labelat(s, s.rchild.rchild)) == "punct"
+

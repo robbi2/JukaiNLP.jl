@@ -12,7 +12,7 @@ reducer(label::Int) = (label << 1) | 1
 reducer() = REDUCER
 
 # retrieve action type 1, 2 or 3
-acttype(action::Int) = action == 1 ? SHIFT : 2 + (action & 1)
+actiontype(action::Int) = action == 1 ? SHIFT : 2 + (action & 1)
 
 # retrieve label id
 tolabel(action::Int) = action >> 1
@@ -22,11 +22,11 @@ type State{T <: ParserType}
     score::Float64
     top::Int
     right::Int
-    left::State{T}
-    lchild::State{T}
-    rchild::State{T}
-    lsibl::State{T}
-    rsibl::State{T}
+    left
+    lchild
+    rchild
+    lsibl
+    rsibl
     tokens::Vector{Token}
     parser::DepParser
     prev::State{T}
@@ -38,31 +38,32 @@ type State{T <: ParserType}
     end
 
     function State(step, score, top, right, left,
+        lchild, rchild, lsibl, rsibl, tokens, parser)
+        new(step, score, top, right, left,
+            lchild, rchild, lsibl, rsibl, tokens, parser)
+    end
+
+    function State(step, score, top, right, left,
         lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact)
         new(step, score, top, right, left,
             lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact)
     end
+
 end
 
-let
-    function __nullstate__(T::Type)
-        s = State{T}(0, 0.0, 0, 1)
-        s.left, s.lchild, s.rchild = s, s, s
-        s.lsibl, s.rsibl, s.prevact = s, s, 0
-        return s
-    end
-    const __labeled = __nullstate__(Labeled)
-    const __unlabeled = __nullstate__(Unlabeled)
-    global nullstate
-    nullstate(::Type{Labeled}) = __labeled
-    nullstate(::Type{Unlabeled}) = __unlabeled
+function __nullstate()
+    s = State(0, 0.0, 0, 1)
+    s.left = s
+    s.lchild, s.rchild = s, s
+    s.lsibl, s.rsibl = s, s
+    return s
 end
 
-Base.isnull(s::State) = s.step == 0
+const nullstate = __nullstate()
 
 function State{T}(tokens::Vector{Token}, parser::DepParser{T})
-    State{T}(1, 0.0, 0, 1, nullstate(T), nullstate(T), nullstate(T),
-        nullstate(T), nullstate(T), tokens, parser, nullstate(T), -1)
+    State{T}(1, 0.0, 0, 1, nothing, nothing,
+        nothing, nothing, nothing, tokens, parser)
 end
 
 # to retrieve result
@@ -70,9 +71,9 @@ function heads(s::State)
     @assert isfinal(s)
     res = fill(-1, length(s.tokens))
     st = s
-    while !isnull(st.prev)
-        !isnull(st.lchild) && ( res[st.lchild.top] = st.top )
-        !isnull(st.rchild) && ( res[st.rchild.top] = st.top )
+    while isdefined(st, :prev)
+        st.lchild != nothing && ( res[st.lchild.top] = st.top )
+        st.rchild != nothing && ( res[st.rchild.top] = st.top )
         st = st.prev
     end
     @assert all(h -> h >= 0, res)
@@ -83,23 +84,32 @@ function labels(s::State)
     @assert isfinal(s)
     res = fill(-1, length(s.tokens))
     st = s
-    while !isnull(st.prev)
-        atype = acttype(st.prevact)
-        atype == REDUCEL && ( res[st.lchild.top] = tolabel(st.prevact) )
-        atype == REDUCER && ( res[st.rchild.top] = tolabel(st.prevact) )
+    while isdefined(st, :prev)
+        acttype = actiontype(st.prevact)
+        acttype == REDUCEL && ( res[st.lchild.top] = tolabel(st.prevact) )
+        acttype == REDUCER && ( res[st.rchild.top] = tolabel(st.prevact) )
         st = st.prev
     end
-    @assert all(l -> l >= 0, res)
+    @assert all(h -> h >= 0, res)
     res
 end
 
 tokenat(s::State, i::Int) = get(s.tokens, i, rootword)
 tokenat(s::State, t::State) = get(s.tokens, t.top, rootword)
+tokenat(s::State, ::Void) = rootword
+
+function tokenat(s::State, head::Symbol, tail::Symbol...)
+    if isempty(tail) || s.(head) == nothing
+        return tokenat(s, s.(head))
+    else
+        return tokenat(s.(head), tail...)
+    end
+end
 
 function labelat(s::State, child::State)
     st = s
     while st.step != child.step + 1
-        isnull(st.prev) && break
+        isdefined(st, :prev) || return -1
         st = st.prev
     end
     tolabel(st.prevact)
@@ -116,13 +126,13 @@ function transit{T}(s::State{T}, act::Int, top::Int,
         rchild, lsibl, rsibl, s.tokens, s.parser, s, act)
 end
 
-function expand{T}(s::State{T}, act::Int)
-    atype = acttype(act)
-    if atype == SHIFT
-        return transit(s, act, s.right, s.right+1, s, nullstate(T), nullstate(T), nullstate(T), nullstate(T))
-    elseif atype == REDUCEL
+function expand(s::State, act::Int)
+    acttype = actiontype(act)
+    if acttype == SHIFT
+        return transit(s, act, s.right, s.right+1, s, nothing, nothing, nothing, nothing)
+    elseif acttype == REDUCEL
         return transit(s, act, s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl)
-    elseif atype == REDUCER
+    elseif acttype == REDUCER
         return transit(s, act, s.left.top, s.right, s.left.left, s.left.lchild, s, s.left.lsibl, s.left)
     else
         throw("Invalid action: $(act).")
@@ -133,7 +143,7 @@ end
 bufferisempty(s::State) = s.right > length(s.tokens)
 
 # check if can perform Reduce, that is, length(stack) >= 2
-reducible(s::State) = !isnull(s.left)
+reducible(s::State) = s.left != nothing
 
 # check if the state is final state
 isfinal(s::State) = bufferisempty(s) && !reducible(s)
@@ -195,16 +205,29 @@ end
 ###################################################
 
 function featuregen(s::State)
-    n0 = tokenat(s, s.right)
-    n1 = tokenat(s, s.right+1)
-    s0 = tokenat(s, s.top)
-    s1 = tokenat(s, s.left)
-    s2 = tokenat(s, s.left.left)
+    # n0  = tokenat(s, s.right)
+    # n1  = tokenat(s, s.right+1)
+    # s0  = tokenat(s, s.top)
+    # s0l = tokenat(s, :lchild)
+    # s0r = tokenat(s, :rchild)
+    # s1 = tokenat(s, :left, :top)
+    # s2 = tokenat(s, :left, :left)
+    # s1l = tokenat(s, :left, :lchild)
+    # s1r = tokenat(s, :left, :rchild)
+
+    n0  = tokenat(s, s.right)
+    n1  = tokenat(s, s.right+1)
+    s0  = tokenat(s, s.top)
     s0l = tokenat(s, s.lchild)
     s0r = tokenat(s, s.rchild)
-    s1l = tokenat(s, s.left.lchild)
-    s1r = tokenat(s, s.left.rchild)
-
+    if s.left == nothing
+        s1, s2, s1l, s1r = rootword, rootword, rootword, rootword
+    else
+        s1 = tokenat(s, s.left.top)
+        s2 = tokenat(s, s.left.left)
+        s1l = tokenat(s, s.left.lchild)
+        s1r = tokenat(s, s.left.rchild)
+    end
     len = size(s.parser.model.weights, 1) # used in @template macro
     @template begin
         # template (1)
