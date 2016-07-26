@@ -14,6 +14,8 @@ julia> Pkg.update()
 ```
 
 ## Tokenization
+`Tokenizer` takes three arguments: dict, model, and tagset.
+
 ```julia
 using JukaiNLP
 using JukaiNLP.Tokenization
@@ -26,7 +28,7 @@ model = Tokenization.ConvNN()
 t = Tokenizer(dict, model, Tokenization.IOE())
 
 # training
-tags = train(t, 100, "$(dirpath)/corpus/mini-training-set.conll")
+train(t, 100, "$(dirpath)/corpus/mini-training-set.conll")
 modelpath = "C:/Users/hshindo/Desktop/tokenizer_100.jld"
 JLD.save(modelpath, "tokenizer.model", t.model)
 

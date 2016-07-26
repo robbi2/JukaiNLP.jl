@@ -3,7 +3,7 @@ type Tagger
     model
 end
 
-function Tagger()
+function Tagger(dict, model)
     #word_dict = load(IdDict{ASCIIString}, "en-word_nyt.dict")
     char_dict = load(IdDict{ASCIIString}, joinpath(Pkg.dir("JukaiNLP"),"dict/en-char.dict"))
     Tagger(char_dict, nothing)

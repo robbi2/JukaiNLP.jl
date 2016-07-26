@@ -1,4 +1,4 @@
-function readfile(path::String, dict::IdDict)
+function readfile(path, dict::IdDict)
     unk, space, lf = dict["UNKNOWN"], dict[" "], dict["LF"]
     chars = Int[]
     ranges = UnitRange{Int}[]
@@ -29,40 +29,6 @@ function readfile(path::String, dict::IdDict)
         pos += length(form)
     end
     chars, ranges
-end
-
-function readfile2(path::String, dict::IdDict)
-    unk, space, lf = dict["UNKNOWN"], dict[" "], dict["LF"]
-    chars, tags = Int[], Int[]
-    lines = open(readlines, path)
-    for i = 1:length(lines)
-        line = chomp(lines[i])
-        if isempty(line)
-            tags[end] = Tagset.ES
-            continue
-        end
-        items = split(line, '\t')
-
-        for c in items[11]
-            if c == 'S'
-                cc = space
-            elseif c == 'N'
-                cc = lf
-            else
-                continue
-            end
-            push!(chars, cc)
-            push!(tags, Tagset.O)
-        end
-
-        form = items[2]
-        for c in form
-            push!(chars, get(dict,string(c),unk))
-            push!(tags, Tagset.I)
-        end
-        tags[end] = Tagset.ET
-    end
-    chars, tags
 end
 
 #=

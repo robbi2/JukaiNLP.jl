@@ -1,6 +1,6 @@
 module Tagging
 
-import ..JukaiNLP
+importall ..JukaiNLP
 using Compat
 import Compat.String
 using Merlin

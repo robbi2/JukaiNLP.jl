@@ -5,7 +5,7 @@ type Token
     tag::Int
 end
 
-function readfile(path, word_dict::IdDict, char_dict::IdDict)
+function readfile(path, word_dict::IdDict, char_dict::IdDict, tag_dict::IdDitc)
     doc = Vector{Token}[]
     tokens = Token[]
     unkword = word_dict["UNKNOWN"]
