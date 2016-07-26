@@ -1,3 +1,6 @@
+export IdDict
+export load
+
 """
     IdDict{T}
 
@@ -25,12 +28,7 @@ type IdDict{T}
 end
 IdDict() = IdDict{Any}()
 
-"""
-    IdDict(path)
-
-Construct IdDict from a file.
-"""
-function IdDict(T::Type, path)
+function load{T}(::Type{IdDict{T}}, path)
     d = IdDict{T}()
     for line in open(readlines, path)
         push!(d, T(chomp(line)))
@@ -42,13 +40,13 @@ Base.count(d::IdDict, id::Int) = d.id2count[id]
 
 Base.getkey(d::IdDict, id::Int) = d.id2key[id]
 
-Base.getindex{T}(d::IdDict{T}, key::T) = d.key2id[key]
+Base.getindex(d::IdDict, key) = d.key2id[key]
 
-Base.get{T}(d::IdDict{T}, key::T, default::Int=0) = get(d.key2id, key, default)
+Base.get(d::IdDict, key, default::Int=0) = get(d.key2id, key, default)
 
 Base.length(d::IdDict) = length(d.key2id)
 
-function Base.push!{T}(d::IdDict{T}, key::T)
+function Base.push!(d::IdDict, key)
     if haskey(d.key2id, key)
         id = d.key2id[key]
         d.id2count[id] += 1

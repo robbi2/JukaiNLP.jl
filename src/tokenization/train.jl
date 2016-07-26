@@ -1,18 +1,27 @@
-function train(t::Tokenizer, path)
-    train_x, train_y = readconll(t, path)
-    test_x = train_x
-    test_y = map(y -> y.data, train_y)
+function train(t::Tokenizer, nepochs::Int, path::String)
+    chars, ranges = readfile(path, t.dict)
+    tags = encode(t.tagset, ranges)
+
+    data_x = []
+    push!(data_x, chars)
+    data_y = []
+    push!(data_y, tags)
     opt = SGD(0.0001)
-    for epoch = 1:20
+    for epoch = 1:nepochs
         println("epoch: $(epoch)")
-        loss = fit(t.nn, crossentropy, opt, train_x, train_y)
+        loss = fit(t.model, crossentropy, opt, data_x, data_y)
         println("loss: $(loss)")
-        zs = map(x -> decode(t,x), test_x)
-        acc = accuracy(test_y, zs)
+
+        data_z = map(data_x) do x
+            argmax(t.model(x).data, 1)
+        end
+        data_yy, data_zz = [data_y...], [data_z...]
+        c = count(x -> x[1] == x[2], zip(data_yy,data_zz))
+        acc = c / length(data_yy)
+        #acc = accuracy([data_y...], [data_z...])
         println("test acc.: $(acc)")
         println("")
     end
-    println("training finish.")
 end
 
 function accuracy(golds::Vector{Int}, preds::Vector{Int})
@@ -22,19 +31,6 @@ function accuracy(golds::Vector{Int}, preds::Vector{Int})
     for i = 1:length(golds)
         golds[i] == preds[i] && (correct += 1)
         total += 1
-    end
-    correct / total
-end
-
-function accuracy(golds::Vector{Vector{Int}}, preds::Vector{Vector{Int}})
-    @assert length(golds) == length(preds)
-    correct = 0
-    total = 0
-    for i = 1:length(golds)
-        for j = 1:length(golds[i])
-            golds[i][j] == preds[i][j] && (correct += 1)
-            total += 1
-        end
     end
     correct / total
 end

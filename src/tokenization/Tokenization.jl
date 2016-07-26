@@ -1,13 +1,15 @@
 module Tokenization
 
-import ..JukaiNLP
+importall ..JukaiNLP
 using Compat
+import Compat.String
 using Merlin
-export decode, train, tokenize
+
+export train, Tokenizer
 
 include("io.jl")
+include("tagset.jl")
 include("tokenizer.jl")
-include("decode.jl")
 include("train.jl")
 
 end
