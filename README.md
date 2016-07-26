@@ -27,7 +27,7 @@ t = Tokenizer(dict, model, Tokenization.IOE())
 
 # training
 tags = train(t, 100, "$(dirpath)/corpus/mini-training-set.conll")
-modelpath = "C:/Users/hshindo/Desktop/tokenizer_20.jld"
+modelpath = "C:/Users/hshindo/Desktop/tokenizer_100.jld"
 JLD.save(modelpath, "tokenizer.model", t.model)
 
 # testing
