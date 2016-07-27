@@ -1,7 +1,13 @@
 workspace()
 using JukaiNLP
-using JukaiNLP.Tokenization
+using JukaiNLP: Tokenization, Tagging
 using JLD
+
+# setup tagger
+dirpath = Pkg.dir("JukaiNLP")
+word_dict = JukaiNLP.load(IdDict{String}, "$(dirpath)/dict/en-word_nyt.dict")
+char_dict = JukaiNLP.load(IdDict{String}, "$(dirpath)/dict/en-char.dict")
+
 
 # setup tokenizer
 dirpath = Pkg.dir("JukaiNLP")

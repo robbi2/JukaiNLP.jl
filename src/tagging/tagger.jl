@@ -1,14 +1,16 @@
 type Tagger
-    dict::IdDict
+    word_dict::IdDict
+    char_dict::IdDict
     model
 end
 
-function Tagger(dict, model)
-    #word_dict = load(IdDict{ASCIIString}, "en-word_nyt.dict")
-    char_dict = load(IdDict{ASCIIString}, joinpath(Pkg.dir("JukaiNLP"),"dict/en-char.dict"))
-    Tagger(char_dict, nothing)
-end
-
-@compat function(t::Tagger)(tokens::Vector)
-
+@compat function(t::Tagger){T<:String}(words::Vector{T})
+    unk = t.word_dict["UNKNOWN"]
+    x = map(words) do w
+        chars =
+        get(t.dict, string(c), unk)
+    end
+    y = t.model(x).data
+    tags = argmax(y, 1)
+    decode(t.tagset, tags)
 end

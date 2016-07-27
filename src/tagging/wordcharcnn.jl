@@ -5,7 +5,7 @@ type WordCharCNN
 end
 
 function WordCharCNN{T}(::Type{T})
-    wordfun = Lookup(F, 500000, 100)
+    #wordfun = Embed(F, 500000, 100)
     #wordfun = Lookup(path, F)
     #=
     charfun = @graph begin

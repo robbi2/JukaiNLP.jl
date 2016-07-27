@@ -1,11 +1,22 @@
 type Token
-    id::Int
     word::Int
     chars::Vector{Int}
     tag::Int
 end
 
-function readfile(path, word_dict::IdDict, char_dict::IdDict, tag_dict::IdDitc)
+typealias Tokens Vector{Token}
+
+function Token(word::String, word_dict, char_dict)
+    word0 = replace(word, r"[0-9]", '0') |> lowercase
+    wordid = get(word_dict, word0, word_dict["UNKNOWN"])
+    chars = Vector{Char}(word)
+    charids = map(chars) do c
+        get(char_dict, c, length(chardict)+1)
+    end
+    Token(wordid, charids, 0)
+end
+
+function readfile(path, word_dict::IdDict, char_dict::IdDict, tag_dict::IdDict)
     doc = Vector{Token}[]
     tokens = Token[]
     unkword = word_dict["UNKNOWN"]

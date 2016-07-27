@@ -36,7 +36,6 @@ end
     end
     y = t.model(x).data
     tags = argmax(y, 1)
-    #tags[end] = Tagset.E
     decode(t.tagset, tags)
 end
 @compat (t::Tokenizer)(str::String) = t(Vector{Char}(str))

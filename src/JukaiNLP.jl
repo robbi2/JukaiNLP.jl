@@ -4,6 +4,7 @@ module JukaiNLP
 
 include("iddict.jl")
 include("tokenization/Tokenization.jl")
+include("tagging/Tagging.jl")
 #include("depparsing/DepParsing.jl")
 
 #using .Tokenization
