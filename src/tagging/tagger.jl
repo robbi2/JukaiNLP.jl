@@ -1,3 +1,10 @@
+type Model
+end
+
+function Model()
+    
+end
+
 type Tagger
     word_dict::IdDict
     char_dict::IdDict

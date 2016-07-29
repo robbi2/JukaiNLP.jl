@@ -25,19 +25,18 @@ using JLD
 
 # setup tokenizer
 dirpath = Pkg.dir("JukaiNLP")
-dict = JukaiNLP.load(IdDict{String}, "$(dirpath)/dict/en-char.dict")
-model = Tokenization.ConvNN()
-t = Tokenizer(dict, model, Tokenization.IOE())
+t = Tokenizer()
 
 # training
-train(t, 100, "$(dirpath)/corpus/mini-training-set.conll")
-modelpath = "C:/Users/hshindo/Desktop/tokenizer_100.jld"
-JLD.save(modelpath, "tokenizer.model", t.model)
+tags = train(t, 100, "$(dirpath)/corpus/mini-training-set.conll")
+modelpath = "C:/Users/shindo/Desktop/tokenizer_20.jld"
+JLD.save(modelpath, "tokenizer", t)
 
 # testing
-t.model = JLD.load(modelpath, "tokenizer.model")
-str = "Pierre Vinken, 61 years old, will join the board. I have a pen. "
+t = JLD.load(modelpath, "tokenizer")
+str = "Pierre Vinken, 61 years old, will join the board.\nI have a pen.\n"
 result = t(str)
+join(map(r -> str[r], result), " ")
 ```
 
 ## Dependency Parsing

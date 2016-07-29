@@ -1,5 +1,5 @@
-function train(t::Tokenizer, nepochs::Int, path::String)
-    chars, ranges = readfile(path, t.dict)
+function train(t::Tokenizer, nepochs::Int, trainpath::String)
+    chars, ranges = readfile(trainpath, t.dict)
     tags = encode(t.tagset, ranges)
 
     data_x = []
@@ -18,7 +18,7 @@ function train(t::Tokenizer, nepochs::Int, path::String)
         data_yy, data_zz = [data_y...], [data_z...]
         c = count(x -> x[1] == x[2], zip(data_yy,data_zz))
         acc = c / length(data_yy)
-        
+
         println("test acc.: $(acc)")
         println("")
     end

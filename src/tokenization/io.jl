@@ -1,21 +1,21 @@
 function readfile(path, dict::IdDict)
-    unk, space, lf = dict["UNKNOWN"], dict[" "], dict["LF"]
+    unk, space, lf = dict["UNKNOWN"], dict[" "], dict["\n"]
     chars = Int[]
     ranges = UnitRange{Int}[]
     lines = open(readlines, path)
     pos = 1
     for line in lines
         line = chomp(line)
-        if isempty(line)
+        if isempty(line) # end of sentence
             continue
         end
         items = split(line, '\t')
 
         for c in items[11]
             c == '_' && continue
-            if c == 'S'
+            if c == 'S' # space
                 push!(chars, space)
-            elseif c == 'N'
+            elseif c == 'N' # newline
                 push!(chars, lf)
             end
             pos += 1
