@@ -1,7 +1,7 @@
 # JukaiNLP: NLP Toolkit based on Deep Learning
 
 [![Build Status](https://travis-ci.org/hshindo/JukaiNLP.jl.svg?branch=master)](https://travis-ci.org/hshindo/JukaiNLP.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/github/hshindo/JukaiNLP.jl?branch=master)](https://ci.appveyor.com/project/hshindo/jukaiNLP-jl/branch/master)
+<!-- [![Build status](https://ci.appveyor.com/api/projects/status/github/hshindo/JukaiNLP.jl?branch=master)](https://ci.appveyor.com/project/hshindo/jukaiNLP-jl/branch/master) -->
 
 `JukaiNLP` is a natural language processing toolkit in [Julia](http://julialang.org/) based on a deep learning framework: [Merlin](https://github.com/hshindo/Merlin.jl).
 
@@ -39,6 +39,7 @@ result = t(str)
 ```
 
 ## Dependency Parsing
+This is alpha version.
 ```julia
 using JukaiNLP: Perceptron, DepParser, Unlabeled, Labeled
 using JukaiNLP: readconll, train!, decode, evaluate

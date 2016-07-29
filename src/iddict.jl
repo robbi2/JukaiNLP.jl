@@ -28,12 +28,17 @@ type IdDict{T}
 end
 IdDict() = IdDict{Any}()
 
-function load{T}(::Type{IdDict{T}}, path)
+function IdDict{T}(data::Vector{T})
     d = IdDict{T}()
-    for line in open(readlines, path)
-        push!(d, T(chomp(line)))
+    for x in data
+        push!(d, x)
     end
     d
+end
+
+function load(::Type{IdDict}, path)
+    data = map(x -> chomp(x), open(readlines,path))
+    IdDict(data)
 end
 
 Base.count(d::IdDict, id::Int) = d.id2count[id]
@@ -42,7 +47,7 @@ Base.getkey(d::IdDict, id::Int) = d.id2key[id]
 
 Base.getindex(d::IdDict, key) = d.key2id[key]
 
-Base.get(d::IdDict, key, default::Int=0) = get(d.key2id, key, default)
+Base.get(d::IdDict, key, default=0) = get(d.key2id, key, default)
 
 Base.length(d::IdDict) = length(d.key2id)
 
@@ -51,7 +56,7 @@ function Base.push!(d::IdDict, key)
         id = d.key2id[key]
         d.id2count[id] += 1
     else
-        id = length(d.key2id) + 1
+        id = length(d.id2key) + 1
         d.key2id[key] = id
         push!(d.id2key, key)
         push!(d.id2count, 1)

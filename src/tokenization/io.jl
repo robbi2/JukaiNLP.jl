@@ -23,7 +23,7 @@ function readfile(path, dict::IdDict)
 
         form = items[2]
         for c in form
-            push!(chars, get(dict,string(c),unk))
+            push!(chars, push!(dict,string(c)))
         end
         push!(ranges, pos:pos+length(form)-1)
         pos += length(form)

@@ -1,6 +1,6 @@
 import JukaiNLP.IdDict
 
-dict = IdDict{AbstractString}()
+dict = IdDict()
 id1 = push!(dict, "abc")
 id2 = push!(dict, "def")
 id3 = push!(dict, "abc")

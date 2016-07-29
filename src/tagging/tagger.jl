@@ -1,13 +1,20 @@
 type Tagger
     word_dict::IdDict
     char_dict::IdDict
+    tag_dict::IdDict
     model
 end
 
+function Tagger()
+    Tagger(IdDict(), IdDict(), IdDict(), nothing)
+end
+
 @compat function(t::Tagger){T<:String}(words::Vector{T})
-    unk = t.word_dict["UNKNOWN"]
+    unkword = 1
+    unkchar = 1
     x = map(words) do w
-        chars =
+        chars = Vector{Char}(w)
+        map(c -> get(t.char_dict,string(c),unkchar), chars)
         get(t.dict, string(c), unk)
     end
     y = t.model(x).data
