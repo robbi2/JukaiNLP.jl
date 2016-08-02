@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/hshindo/JukaiNLP.jl.svg?branch=master)](https://travis-ci.org/hshindo/JukaiNLP.jl)
 <!-- [![Build status](https://ci.appveyor.com/api/projects/status/github/hshindo/JukaiNLP.jl?branch=master)](https://ci.appveyor.com/project/hshindo/jukaiNLP-jl/branch/master) -->
 
+<iframe width="420" height="315" src="https://www.youtube.com/embed/7lgZ5bSGB2g" frameborder="0" allowfullscreen></iframe>
+
 [Demo](http://158.199.141.203/)
 
 `JukaiNLP` is a natural language processing toolkit in [Julia](http://julialang.org/) based on a deep learning framework: [Merlin](https://github.com/hshindo/Merlin.jl).
