@@ -3,9 +3,7 @@
 [![Build Status](https://travis-ci.org/hshindo/JukaiNLP.jl.svg?branch=master)](https://travis-ci.org/hshindo/JukaiNLP.jl)
 <!-- [![Build status](https://ci.appveyor.com/api/projects/status/github/hshindo/JukaiNLP.jl?branch=master)](https://ci.appveyor.com/project/hshindo/jukaiNLP-jl/branch/master) -->
 
-[![JukaiNLP demo](http://img.youtube.com/vi/7lgZ5bSGB2g/0.jpg)](http://www.youtube.com/watch?v=7lgZ5bSGB2g)
-
-<iframe width="420" height="315" src="https://www.youtube.com/embed/7lgZ5bSGB2g" frameborder="0" allowfullscreen></iframe>
+<p align="center"><img src="https://github.com/hshindo/JukaiNLP.jl/blob/masterJukaiNLP.gif"></p>
 
 [Demo](http://158.199.141.203/)
 
