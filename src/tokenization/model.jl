@@ -6,7 +6,7 @@ end
 
 function Model()
     T = Float32
-    Model(Embed(T,100,10),
+    Model(Embed(T,10000,10),
         Conv(T,(10,7),(1,70),paddims=(0,3)),
         Linear(T,70,4))
 end

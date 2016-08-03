@@ -5,7 +5,7 @@ type Tokenizer
 end
 
 function Tokenizer()
-    dict = IdDict(["UNKNOWN", " ", "\n"])
+    dict = IdDict(map(UTF8String, ["UNKNOWN", " ", "\n"]))
     Tokenizer(dict, IOE(), Model())
 end
 

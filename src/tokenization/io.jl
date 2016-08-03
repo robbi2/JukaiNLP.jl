@@ -11,7 +11,7 @@ function readfile(path, dict::IdDict)
         end
         items = split(line, '\t')
 
-        for c in items[11]
+        for c in items[end]
             c == '_' && continue
             if c == 'S' # space
                 push!(chars, space)
@@ -21,7 +21,7 @@ function readfile(path, dict::IdDict)
             pos += 1
         end
 
-        form = items[2]
+        form = items[24]
         for c in form
             push!(chars, push!(dict,string(c)))
         end
