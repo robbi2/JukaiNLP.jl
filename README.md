@@ -5,7 +5,7 @@
 
 <p align="center"><img src="https://github.com/hshindo/JukaiNLP.jl/blob/master/JukaiNLP.gif"></p>
 
-[Try online demo!](http://158.199.141.203/)
+[Try online demo!](http://jukainlp.hshindo.com/)
 
 `JukaiNLP` is a natural language processing toolkit in [Julia](http://julialang.org/) based on a deep learning framework: [Merlin](https://github.com/hshindo/Merlin.jl).
 
