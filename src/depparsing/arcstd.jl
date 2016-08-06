@@ -44,11 +44,13 @@ type State{T <: ParserType}
     end
 end
 
+# nullstate is a State object whose all State type fields
+# reference itself. used instead of Nullable{State} or nothing::Void
 let
     function __nullstate__(T::Type)
         s = State{T}(0, 0.0, 0, 1)
         s.left, s.lchild, s.rchild = s, s, s
-        s.lsibl, s.rsibl, s.prevact = s, s, 0
+        s.lsibl, s.rsibl, s.prevact = s, s, reducel(1) # reducel(NONE)
         return s
     end
     const __labeled = __nullstate__(Labeled)
@@ -62,7 +64,7 @@ Base.isnull(s::State) = s.step == 0
 
 function State{T}(tokens::Vector{Token}, parser::DepParser{T})
     State{T}(1, 0.0, 0, 1, nullstate(T), nullstate(T), nullstate(T),
-        nullstate(T), nullstate(T), tokens, parser, nullstate(T), -1)
+        nullstate(T), nullstate(T), tokens, parser, nullstate(T), reducel(1))
 end
 
 # to retrieve result
@@ -93,8 +95,8 @@ function labels(s::State)
     res
 end
 
-tokenat(s::State, i::Int) = get(s.tokens, i, rootword)
-tokenat(s::State, t::State) = get(s.tokens, t.top, rootword)
+tokenat(s::State, i::Int) = get(s.tokens, i, roottoken)
+tokenat(s::State, t::State) = get(s.tokens, t.top, roottoken)
 
 function labelat(s::State, child::State)
     st = s
@@ -105,28 +107,22 @@ function labelat(s::State, child::State)
     tolabel(st.prevact)
 end
 
-###################################################
-#################### "expand"s ####################
-###################################################
-
-function transit{T}(s::State{T}, act::Int, top::Int,
-    right::Int, left, lchild, rchild, lsibl, rsibl)
-    score = s.score + s.parser.model(s, act)
-    State{T}(s.step + 1, score, top, right, left, lchild,
-        rchild, lsibl, rsibl, s.tokens, s.parser, s, act)
-end
-
 function expand{T}(s::State{T}, act::Int)
     atype = acttype(act)
-    if atype == SHIFT
-        return transit(s, act, s.right, s.right+1, s, nullstate(T), nullstate(T), nullstate(T), nullstate(T))
-    elseif atype == REDUCEL
-        return transit(s, act, s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl)
-    elseif atype == REDUCER
-        return transit(s, act, s.left.top, s.right, s.left.left, s.left.lchild, s, s.left.lsibl, s.left)
-    else
-        throw("Invalid action: $(act).")
+    top, right, left, lchild, rchild, lsibl, rsibl = begin
+        if atype == SHIFT
+             s.right, s.right+1, s, nullstate(T), nullstate(T), nullstate(T), nullstate(T)
+        elseif atype == REDUCEL
+             s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl
+        elseif atype == REDUCER
+             s.left.top, s.right, s.left.left, s.left.lchild, s, s.left.lsibl, s.left
+        else
+            throw("Invalid action: $(act).")
+        end
     end
+    score = s.parser.model(s, act)
+    State{T}(s.step+1, score, top, right, left, lchild,
+        rchild, lsibl, rsibl, s.tokens, s.parser, s, act)
 end
 
 # check if buffer is empty
@@ -137,6 +133,18 @@ reducible(s::State) = !isnull(s.left)
 
 # check if the state is final state
 isfinal(s::State) = bufferisempty(s) && !reducible(s)
+
+function isvalid(s::State, act::Int)
+    if act == SHIFT
+        return !bufferisempty(s)
+    elseif act == REDUCEL
+        return reducible(s) && s.left.top != 0
+    elseif act == REDUCER
+        return reducible(s)
+    else
+        throw("invalid action: $act")
+    end
+end
 
 function expand_reduce_state!(res::Vector{State{Labeled}}, s::State{Labeled}, act::Function)
     for label in 1:length(s.parser.labels)
@@ -172,12 +180,12 @@ function expand_reduce_state(s::State{Labeled}, act::Function)
     expand(s, act(tokenat(s, child).label))
 end
 
-function expandgold(s::State)
+function expandgold{T}(s::State{T})
     isfinal(s) && return []
     if !reducible(s)
         return [expand(s, SHIFT)]
     else
-        s0 = tokenat(s, s.top)
+        s0 = tokenat(s, s)
         s1 = tokenat(s, s.left)
         if s1.head == s.top
             return [expand_reduce_state(s, reducel)]
@@ -188,77 +196,4 @@ function expandgold(s::State)
         end
     end
     return [expand(s, SHIFT)]
-end
-
-###################################################
-################## feature function ###############
-###################################################
-
-function featuregen(s::State)
-    n0 = tokenat(s, s.right)
-    n1 = tokenat(s, s.right+1)
-    s0 = tokenat(s, s.top)
-    s1 = tokenat(s, s.left)
-    s2 = tokenat(s, s.left.left)
-    s0l = tokenat(s, s.lchild)
-    s0r = tokenat(s, s.rchild)
-    s1l = tokenat(s, s.left.lchild)
-    s1r = tokenat(s, s.left.rchild)
-
-    len = size(s.parser.model.weights, 1) # used in @template macro
-    @template begin
-        # template (1)
-        (s0.word,)
-        (s0.tag,)
-        (s0.word, s0.tag)
-        (s1.word,)
-        (s1.tag,)
-        (s1.word, s1.tag)
-        (n0.word,)
-        (n0.tag,)
-        (n0.word, n0.tag)
-
-        # additional for (1)
-        (n1.word,)
-        (n1.tag,)
-        (n1.word, n1.tag)
-
-        # template (2)
-        (s0.word, s1.word)
-        (s0.tag, s1.tag)
-        (s0.tag, n0.tag)
-        (s0.word, s0.tag, s1.tag)
-        (s0.tag, s1.word, s1.tag)
-        (s0.word, s1.word, s1.tag)
-        (s0.word, s0.tag, s1.tag)
-        (s0.word, s0.tag, s1.word, s1.tag)
-
-        # additional for (2)
-        (s0.tag, s1.word)
-        (s0.word, s1.tag)
-        (s0.word, n0.word)
-        (s0.word, n0.tag)
-        (s0.tag, n0.word)
-        (s1.word, n0.word)
-        (s1.tag, n0.word)
-        (s1.word, n0.tag)
-        (s1.tag, n0.tag)
-
-        # template (3)
-        (s0.tag, n0.tag, n1.tag)
-        (s1.tag, s0.tag, n0.tag)
-        (s0.word, n0.tag, n1.tag)
-        (s1.tag, s0.word, n0.tag)
-
-        # template (4)
-        (s1.tag, s1l.tag, s0.tag)
-        (s1.tag, s1r.tag, s0.tag)
-        (s1.tag, s0.tag, s0r.tag)
-        (s1.tag, s1l.tag, s0.tag)
-        (s1.tag, s1r.tag, s0.word)
-        (s1.tag, s0.word, s0l.tag)
-
-        # template (5)
-        (s2.tag, s1.tag, s0.tag)
-    end
 end

@@ -20,6 +20,18 @@ function DepParser{T <: ParserType}(parsertype::Type{T}, path::AbstractString)
     words = IdDict(AbstractString, path)
     tags = IdDict{AbstractString}()
     labels = IdDict{AbstractString}()
+    push!(tags, "NONE")
+    push!(labels, "NONE")
     DepParser{T}(words, tags, labels, parsertype)
 end
 
+@compat function (parser::DepParser){T}(sents::Vector{Vector{T}})
+    model_t = typeof(parser.model)
+    decode(model_t, parser, sents)
+end
+
+@compat function (parser::DepParser)(filepath::AbstractString)
+    sents = readconll(parser, filepath, train=false)
+    model_t = typeof(parser.model)
+    decode(model_t, parser, sents)
+end

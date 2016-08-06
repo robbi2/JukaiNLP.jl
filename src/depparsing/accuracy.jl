@@ -14,6 +14,7 @@ function evaluate(parser::DepParser{Unlabeled}, ss::Vector{State{Unlabeled}})
     end
     uas = float(num) / float(den)
     @printf "UAS: %1.4f\n" uas
+    uas, 0.0
 end
 
 # calculates both unlabeled & labeled attachment score
@@ -40,4 +41,5 @@ function evaluate(parser::DepParser{Labeled}, ss::Vector{State{Labeled}})
     las = float(lnum) / float(den)
     @printf "UAS: %1.4f\n" uas
     @printf "LAS: %1.4f\n" las
+    uas, las
 end

@@ -6,9 +6,9 @@ type Token
     label::Int
 end
 
-rootword = Token(0, 0, 0, 0)
+roottoken = Token(2, 1, 0, 1) # use PADDING
 
-function readconll(parser::DepParser, path::AbstractString)
+function readconll(parser::DepParser, path::AbstractString; train=true)
     doc = Vector{Token}[]
     push!(doc, Token[])
     for line in open(readlines, path)
@@ -20,9 +20,9 @@ function readconll(parser::DepParser, path::AbstractString)
             word, tag, head, label = items[2], items[4], items[7], items[8]
             word = replace(lowercase(word), r"\d", "0")
             wordid = get(parser.words, word, 1) # words[1] == UNKNOWN
-            tagid = push!(parser.tags, tag)
+            tagid = train ? push!(parser.tags, tag) : get(parser.tags, tag, 1)
             headid = parse(Int, head)
-            labelid = push!(parser.labels, label)
+            labelid = train ? push!(parser.labels, label) : get(parser.labels, label, 1)
             t = Token(wordid, tagid, headid, labelid)
             push!(doc[end], t)
         end

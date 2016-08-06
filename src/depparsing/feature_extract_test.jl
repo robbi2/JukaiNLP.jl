@@ -1,4 +1,5 @@
 
+
 macro test(cond)
     teststr = string(cond)
     quote
@@ -12,17 +13,18 @@ using JukaiNLP: Perceptron, DepParser, readconll, Unlabeled, Labeled
 using JukaiNLP.DepParsing: expandgold, State, isfinal, tokenat, stacktrace, tolabel, initmodel!, labelat, print, stacktrace
 using TransitionParser: beamsearch
 
-parser = DepParser("dict/en-word_nyt.dict", parsertype=Labeled)
+parser = DepParser(Labeled, "dict/en-word_nyt.dict")
 sents = readconll(parser, "corpus/mini-training-set.conll")
 initmodel!(parser, Perceptron)
-s = beamsearch(State(sents[4], parser), 1, expandgold)
-stacktrace(parser, s)
+s = beamsearch(State(sents[4], parser), 1, expandgold)[end][1]
+stacktrace(s)
 
 word(w) = getkey(parser.words, w)
 label(l) = getkey(parser.labels, l)
 
 @test isfinal(s)
-@test tokenat(s, s.top).word == 0
+@test tokenat(s, s.top).word == 2
+# @show word(tokenat(s, s.rchild).word)
 @test word(tokenat(s, s.rchild).word) == "says"
 @test word(tokenat(s, s.rchild.lchild).word) == "raziq"
 @test word(tokenat(s, s.rchild.lchild.lchild).word) == "border"
