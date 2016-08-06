@@ -1,5 +1,9 @@
 using Merlin
 
+"""
+A Fast and Accurate Dependency Parser using Neural Networks, Chen and Manning, EMNLP 2014
+"""
+
 type Sample
     wordids::Vector{Int}
     tagids::Vector{Int}
