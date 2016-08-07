@@ -6,7 +6,8 @@ function train(t::Tokenizer, nepochs::Int, trainpath::String)
     push!(data_x, chars)
     data_y = []
     push!(data_y, tags)
-    opt = AdaGrad(0.01) #SGD(0.0001)
+    #opt = AdaGrad(0.01)
+    opt = SGD(0.0001)
     for epoch = 1:nepochs
         println("epoch: $(epoch)")
         loss = fit(t.model, crossentropy, opt, data_x, data_y)
