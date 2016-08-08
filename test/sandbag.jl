@@ -9,9 +9,7 @@ t = Tokenizer()
 
 # training
 trainpath = "$(dirpath)/corpus/mini-training-set.conll"
-data = Tokenization.readtsv(trainpath) do items
-    items[2], items[11]
-end
+data = readconll(trainpath, [2,11])
 train(t, 100, data)
 modelpath = "C:/Users/hshindo/Desktop/tokenizer_20.jld"
 JLD.save(modelpath, "tokenizer", t)

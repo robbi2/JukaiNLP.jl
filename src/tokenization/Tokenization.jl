@@ -7,6 +7,7 @@ using Merlin
 
 export train, Tokenizer
 
+include("model.jl")
 include("tagset.jl")
 include("tokenizer.jl")
 include("train.jl")

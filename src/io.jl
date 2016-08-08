@@ -1,6 +1,6 @@
-export readtsv
+export readconll
 
-function readtsv(f, path)
+function readconll(path, columns=Int[])
     doc = []
     sent = []
     lines = open(readlines, path)
@@ -11,7 +11,8 @@ function readtsv(f, path)
             sent = []
         else
             items = split(line, '\t')
-            push!(sent, f(items))
+            length(items) > 0 && (items = items[columns])
+            push!(sent, items)
         end
     end
     length(sent) > 0 && push!(doc, sent)
