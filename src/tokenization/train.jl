@@ -1,12 +1,38 @@
-function train(t::Tokenizer, nepochs::Int, trainpath::String)
-    chars, ranges = readfile(trainpath, t.dict)
-    tags = encode(t.tagset, ranges)
+function encode(t::Tokenizer, doc::Vector)
+    unk, space, lf = t.dict["UNKNOWN"], t.dict[" "], t.dict["\n"]
+    chars = Int[]
+    ranges = UnitRange{Int}[]
+    pos = 1
+    for sent in doc
+        for (word,tag) in sent
+            for c in tag
+                c == '_' && continue
+                if c == 'S' # space
+                    push!(chars, space)
+                elseif c == 'N' # newline
+                    push!(chars, lf)
+                end
+                pos += 1
+            end
+            for c in word
+                push!(chars, push!(t.dict,string(c)))
+            end
+            push!(ranges, pos:pos+length(word)-1)
+            pos += length(word)
+        end
+    end
+    chars, ranges
+end
 
-    data_x = []
+function train(t::Tokenizer, nepochs::Int, doc::Vector)
+    chars, ranges = encode(t, doc)
+    tags = encode(t.tagset, ranges)
+    data_x, data_y = [], []
     push!(data_x, chars)
-    data_y = []
     push!(data_y, tags)
-    opt = AdaGrad(0.01) #SGD(0.0001)
+
+    #opt = AdaGrad(0.01)
+    opt = SGD(0.0001)
     for epoch = 1:nepochs
         println("epoch: $(epoch)")
         loss = fit(t.model, crossentropy, opt, data_x, data_y)

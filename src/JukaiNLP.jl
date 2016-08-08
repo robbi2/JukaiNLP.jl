@@ -2,6 +2,7 @@ module JukaiNLP
 
 #export train
 
+include("io.jl")
 include("iddict.jl")
 include("tokenization/Tokenization.jl")
 include("tagging/Tagging.jl")
