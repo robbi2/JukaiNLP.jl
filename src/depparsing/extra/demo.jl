@@ -32,13 +32,6 @@ Options:
 
 args = docopt(doc)
 
-# function saveparser{T}(parser::DepParser{T}, path::AbstractString)
-#     println("\nsaving model to $(path)...")
-#     open(io -> serialize(io, parser), path, "w")
-#     # save(args["<model_path>"], "parser", parser)
-#     println("done")
-# end
-
 worddict = args["<worddict>"]
 parsertype = args["--labeled"] ? Labeled :
              args["--unlabeled"] ? Unlabeled :

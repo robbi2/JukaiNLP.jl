@@ -11,7 +11,7 @@ type Sample
     target::Int
 end
 
-type FeedForward <: Model
+type FeedForward
     word_f
     tag_f
     label_f
@@ -154,20 +154,14 @@ function sparsefeatures(s::State)
 end
 
 function parsegreedy!{T}(parser::DepParser{T}, ss::Vector{State{T}})
-    labelsize = targetsize(parser.model)
     while !all(isfinal, ss)
         preds = parser.model(ss)
+        preds.data += [isvalid(ss[j], acttype(i)) ? 0f0 : -Inf32
+                       for i = 1:targetsize(parser.model), j = 1:length(ss)]
+        bestacts = argmax(preds.data, 1)
         for i = 1:length(ss)
-            s = ss[i]
-            isfinal(s) && continue
-            pred = sub(preds.data, :, [i])
-            bestact = argmax(pred, 1)[1]
-            for k = 1:labelsize
-                isvalid(s, acttype(bestact)) && break
-                pred[bestact] = typemin(Float32)
-                bestact = argmax(pred, 1)[1]
-            end
-            ss[i] = expand(s, bestact)
+            isfinal(ss[i]) && continue
+            ss[i] = expand(ss[i], bestacts[i])
         end
     end
     ss

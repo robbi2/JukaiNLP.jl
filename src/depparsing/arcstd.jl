@@ -32,6 +32,8 @@ type State{T <: ParserType}
     prev::State{T}
     prevact::Int
     feat::Vector{Int}
+    beamid::Int
+    batchid::Int
 
     function State(step, score, top, right)
         new(step, score, top, right)
