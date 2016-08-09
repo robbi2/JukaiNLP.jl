@@ -11,12 +11,11 @@ t = Tokenizer()
 trainpath = "$(dirpath)/corpus/mini-training-set.conll"
 data = readconll(trainpath, [2,11])
 train(t, 100, data)
-modelpath = "C:/Users/hshindo/Desktop/tokenizer_20.jld"
+modelpath = "C:/Users/shindo/Desktop/tokenizer_20.jld"
 JLD.save(modelpath, "tokenizer", t)
 
 # testing
 t = JLD.load(modelpath, "tokenizer")
 str = "Pierre Vinken, 61 years old, will join the board.\nI have a pen.\n"
-t.model
 result = t(str)
 join(map(r -> str[r], result), " ")

@@ -10,8 +10,9 @@
 `JukaiNLP` is a natural language processing toolkit in [Julia](http://julialang.org/) based on a deep learning framework: [Merlin](https://github.com/hshindo/Merlin.jl).
 
 ## Installation
+First, install [Merlin](https://github.com/hshindo/Merlin.jl).
+Then,
 ```julia
-julia> Pkg.clone("https://github.com/hshindo/Merlin.jl.git")
 julia> Pkg.clone("https://github.com/hshindo/TransitionParser.jl.git")
 julia> Pkg.clone("https://github.com/hshindo/JukaiNLP.jl.git")
 julia> Pkg.update()
@@ -25,11 +26,13 @@ using JukaiNLP.Tokenization
 using JLD
 
 # setup tokenizer
+dirpath = Pkg.dir("JukaiNLP")
 t = Tokenizer()
 
 # training
-dirpath = Pkg.dir("JukaiNLP")
-tags = train(t, 100, "$(dirpath)/corpus/mini-training-set.conll")
+trainpath = "$(dirpath)/corpus/mini-training-set.conll"
+data = readconll(trainpath, [2,11])
+train(t, 100, data)
 modelpath = "C:/Users/shindo/Desktop/tokenizer_20.jld"
 JLD.save(modelpath, "tokenizer", t)
 
