@@ -2,7 +2,7 @@
 ccall(:jl_exit_on_sigint, Void, (Cint,), 0)
 
 push!(LOAD_PATH, "..")
-using JukaiNLP: DepParser, Perceptron, Unlabeled, Labeled, FeedForward
+using JukaiNLP: DepParser, Perceptron, Unlabeled, Labeled, FeedForward, StructuredFeedForward
 using JukaiNLP: readconll, train!, decode, evaluate, toconll, initmodel!
 using JukaiNLP.DepParsing: Token
 # using JLD
@@ -53,8 +53,11 @@ if args["train"]
     testsents = testfile == nothing ? Vector{Token}[] :
                 readconll(parser, testfile, train=false)
     if args["--nn"]
-        train!(FeedForward, parser, trainsents, testsents, embed=embedfile,
+        parser = open(deserialize, "local_hidden1024.dat")
+        train!(StructuredFeedForward, parser, trainsents, testsents, embed=embedfile,
             iter=iter, batchsize=batchsize, evaliter=evaliter, outfile=modelpath)
+        # train!(FeedForward, parser, trainsents, testsents, embed=embedfile,
+        #     iter=iter, batchsize=batchsize, evaliter=evaliter, outfile=modelpath)
     elseif args["--perceptron"]
         train!(Perceptron, parser, trainsents, testsents,
             iter=iter, outfile=modelpath)

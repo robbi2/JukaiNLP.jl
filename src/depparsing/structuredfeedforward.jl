@@ -1,4 +1,7 @@
 
+"""
+Globally Normalized Transition-Based Neural Networks, ACL, 2016
+"""
 # used in beamsearch
 import Base.(<)
 (<)(x::Var, y::Var) = (<)(x.data[1], y.data[1])
