@@ -1,4 +1,3 @@
-using Merlin
 
 """
 A Fast and Accurate Dependency Parser using Neural Networks, Chen and Manning, EMNLP 2014
@@ -29,7 +28,7 @@ function myEmbed{T}(path::AbstractString, t::Type{T})
         w = map(x -> parse(T,x), items)
         ws[i] = Merlin.Param(w)
     end
-    Embed(ws)
+    Embedding(ws, IntSet())
 end
 
 # linear function with [-0.01, 0.01] uniform distribution
@@ -41,17 +40,17 @@ function myLinear(T::Type, indim::Int, outdim::Int)
 end
 
 function initmodel!(parser::DepParser, model::Type{FeedForward}; embed="",
-    sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[200])
+    sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[1024])
     T = Float32
     if embed == ""
         info("USING EMBEDDINGS WITH UNIFORM DISTRIBUTION [-0.01, 0.01]")
-        word_f = Embed(T, length(parser.words), embedsizes[1])
+        word_f = Embedding(T, length(parser.words), embedsizes[1])
     else
         info("USING EMBEDDINGS LOADED FROM $(embed)")
         word_f = myEmbed(embed, Float32)
     end
-    tag_f = Embed(T, length(parser.tags), embedsizes[2])
-    label_f = Embed(T, length(parser.labels), embedsizes[3])
+    tag_f = Embedding(T, length(parser.tags), embedsizes[2])
+    label_f = Embedding(T, length(parser.labels), embedsizes[3])
     indim = sum(sparsesizes .* embedsizes)
     outdim = 1 + 2 * length(parser.labels)
     W = Array(Linear, length(hiddensizes)+1)
@@ -71,7 +70,7 @@ end
 # to tell where the State is in a batch
 # called from expand(::State ::Int)
 @compat function (m::FeedForward){T}(s::State{T}, act::Int)
-    0f0
+    Var([0f0])
 end
 
 @compat function (m::FeedForward)(batch::AbstractVector{Sample})
@@ -86,7 +85,8 @@ end
     labelmat = m.label_f(Var(hcat(labelvec...)))
     h0 = concat(1, wordmat, tagmat, labelmat)
     h1 = tanh(m.W[1](h0))
-    m.W[2](h1)
+    # h2 = tanh(m.W[2](h1))
+    m.W[end](h1)
 end
 
 @compat function (m::FeedForward){T}(batch::AbstractVector{State{T}})
@@ -168,13 +168,15 @@ function parsegreedy!{T}(parser::DepParser{T}, ss::Vector{State{T}})
 end
 
 function update!(opt::Union{SGD,AdaGrad}, gold::Vector{Int}, pred::Var)
-    l = crossentropy(gold, pred)
+    l = crossentropy(gold, pred) * (1 / length(gold))
     loss = sum(l.data)
     vars = gradient!(l)
     for v in vars
-        # l2 normalization
-        BLAS.axpy!(Float32(10e-8), v.data, v.grad)
-        opt(v.data, v.grad)
+        if isa(v.f, Merlin.Functor)
+            # l2 normalization
+            BLAS.axpy!(Float32(10e-8), v.data, v.grad)
+            Merlin.update!(v.f, opt)
+        end
     end
     loss
 end
@@ -183,7 +185,8 @@ typealias Doc Vector{Vector{Token}}
 
 function train!{T}(::Type{FeedForward}, parser::DepParser{T}, trainsents::Doc,
     testsents::Doc=Vector{Token}[]; embed="", batchsize=32, iter=20, progbar=true,
-    opt=AdaGrad(0.01), evaliter=100, outfile="parser.dat")
+    opt=SGD(0.01, 0.9), evaliter=100, outfile="parser.dat")
+    # opt=AdaGrad(0.01), evaliter=100, outfile="parser.dat")
     info("WILL RUN $iter ITERATIONS")
 
     saver = ModelSaver(outfile)

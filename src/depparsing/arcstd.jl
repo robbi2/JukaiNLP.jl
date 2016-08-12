@@ -19,7 +19,7 @@ tolabel(action::Int) = action >> 1
 
 type State{T <: ParserType}
     step::Int
-    score::Float64
+    score::Union{Float64,Var}
     top::Int
     right::Int
     left::State{T}
@@ -32,8 +32,6 @@ type State{T <: ParserType}
     prev::State{T}
     prevact::Int
     feat::Vector{Int}
-    beamid::Int
-    batchid::Int
 
     function State(step, score, top, right)
         new(step, score, top, right)
@@ -65,7 +63,8 @@ end
 Base.isnull(s::State) = s.step == 0
 
 function State{T}(tokens::Vector{Token}, parser::DepParser{T})
-    State{T}(1, 0.0, 0, 1, nullstate(T), nullstate(T), nullstate(T),
+    score = parser.model == Perceptron ? 0.0 : Var([0f0])
+    State{T}(1, score, 0, 1, nullstate(T), nullstate(T), nullstate(T),
         nullstate(T), nullstate(T), tokens, parser, nullstate(T), reducel(1))
 end
 
