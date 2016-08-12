@@ -93,7 +93,7 @@ end
 
 function train!{T}(::Type{StructuredFeedForward}, parser::DepParser{T}, trainsents::Doc,
     testsents::Doc=Vector{Token}[]; embed="", beamsize=31, batchsize=32, iter=20,
-    progbar=true, opt=SGD(0.0001, 0.9), evaliter=100, outfile="parser.dat")
+    progbar=true, opt=SGD(0.0001, momentum=0.9), evaliter=100, outfile="parser.dat")
     info("WILL RUN $iter ITERATIONS")
 
     saver = ModelSaver(outfile)

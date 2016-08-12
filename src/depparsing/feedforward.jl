@@ -19,18 +19,6 @@ end
 
 targetsize(m::FeedForward) = size(m.W[end].w.data)[1]
 
-# tentative
-function myEmbed{T}(path::AbstractString, t::Type{T})
-    lines = open(readlines, path)
-    ws = Array(Var, length(lines))
-    for i = 1:length(lines)
-        items = split(chomp(lines[i]), ' ')
-        w = map(x -> parse(T,x), items)
-        ws[i] = Merlin.Param(w)
-    end
-    Embedding(ws, IntSet())
-end
-
 # linear function with [-0.01, 0.01] uniform distribution
 function myLinear(T::Type, indim::Int, outdim::Int)
     r = T(0.01)
@@ -47,7 +35,7 @@ function initmodel!(parser::DepParser, model::Type{FeedForward}; embed="",
         word_f = Embedding(T, length(parser.words), embedsizes[1])
     else
         info("USING EMBEDDINGS LOADED FROM $(embed)")
-        word_f = myEmbed(embed, Float32)
+        word_f = Embedding(embed, Float32)
     end
     tag_f = Embedding(T, length(parser.tags), embedsizes[2])
     label_f = Embedding(T, length(parser.labels), embedsizes[3])
@@ -185,7 +173,7 @@ typealias Doc Vector{Vector{Token}}
 
 function train!{T}(::Type{FeedForward}, parser::DepParser{T}, trainsents::Doc,
     testsents::Doc=Vector{Token}[]; embed="", batchsize=32, iter=20, progbar=true,
-    opt=SGD(0.01, 0.9), evaliter=100, outfile="parser.dat")
+    opt=SGD(0.01, momentum=0.9), evaliter=100, outfile="parser.dat")
     # opt=AdaGrad(0.01), evaliter=100, outfile="parser.dat")
     info("WILL RUN $iter ITERATIONS")
 
