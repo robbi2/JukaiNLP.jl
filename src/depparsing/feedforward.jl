@@ -3,18 +3,19 @@
 A Fast and Accurate Dependency Parser using Neural Networks, Chen and Manning, EMNLP 2014
 """
 
-type Sample
-    wordids::Vector{Int}
-    tagids::Vector{Int}
-    labelids::Vector{Int}
-    target::Int
-end
-
 type FeedForward
     word_f
     tag_f
     label_f
+    nonlinear
     W
+end
+
+type Sample
+    wordids::Vector{Int}
+    tagids::Union{Matrix{Float32},Vector{Int}}
+    labelids::Vector{Int}
+    target::Int
 end
 
 targetsize(m::FeedForward) = size(m.W[end].w.data)[1]
@@ -27,8 +28,8 @@ function myLinear(T::Type, indim::Int, outdim::Int)
     Linear(Merlin.Param(w),Merlin.Param(b))
 end
 
-function initmodel!(parser::DepParser, model::Type{FeedForward}; embed="",
-    sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[1024])
+function initmodel!(parser::DepParser, model::Type{FeedForward}, embed,
+    topktags, nonlinear, sparsesizes, embedsizes, hiddensizes)
     T = Float32
     if embed == ""
         info("USING EMBEDDINGS WITH UNIFORM DISTRIBUTION [-0.01, 0.01]")
@@ -37,7 +38,11 @@ function initmodel!(parser::DepParser, model::Type{FeedForward}; embed="",
         info("USING EMBEDDINGS LOADED FROM $(embed)")
         word_f = Embedding(embed, Float32)
     end
-    tag_f = Embedding(T, length(parser.tags), embedsizes[2])
+    if topktags
+        tag_f = Linear(T, length(parser.tags), embedsizes[2])
+    else
+        tag_f = Embedding(T, length(parser.tags), embedsizes[2])
+    end
     label_f = Embedding(T, length(parser.labels), embedsizes[3])
     indim = sum(sparsesizes .* embedsizes)
     outdim = 1 + 2 * length(parser.labels)
@@ -47,11 +52,12 @@ function initmodel!(parser::DepParser, model::Type{FeedForward}; embed="",
         indim = hiddensizes[i]
     end
     W[end] = myLinear(T, indim, outdim)
-    parser.model = FeedForward(word_f, tag_f, label_f, W)
+    parser.model = FeedForward(word_f, tag_f, label_f, nonlinear, W)
     info("INPUT: [S^word,S^tag,S^label] = ", sparsesizes)
     info("EMBED DIMS: [word,tag,label] = ", embedsizes)
     info("HIDDEN LAYER: ", hiddensizes)
     info("OUTPUT DIM: ", outdim)
+    info("NONLINEAR: ", nonlinear)
 end
 
 # TODO: make State have id field
@@ -61,7 +67,22 @@ end
     Var([0f0])
 end
 
-@compat function (m::FeedForward)(batch::AbstractVector{Sample})
+"""
+Improved Transition-Based Parsing and Tagging with Neural Networks, EMNLP, 2015
+k-best POS tags
+"""
+function tagvectors(f::Linear, tagvec)
+    batchsize = length(tagvec)
+    embedsize, inputsize = size(f.w)
+    h = f(Var(hcat(map(v -> reshape(v, inputsize, 20), tagvec)...)))
+    reshape(h, embedsize*20, batchsize)
+end
+
+function tagvectors(f::Embedding, tagvec)
+    f(Var(hcat(tagvec...)))
+end
+
+@compat function (m::FeedForward)(batch::AbstractVector{Sample}, istrain=true)
     wordvec, tagvec, labelvec = [], [], []
     for s in batch
         push!(wordvec, s.wordids)
@@ -69,27 +90,24 @@ end
         push!(labelvec, s.labelids)
     end
     wordmat = m.word_f(Var(hcat(wordvec...)))
-    tagmat = m.tag_f(Var(hcat(tagvec...)))
+    # tagmat = m.tag_f(Var(hcat(tagvec...)))
+    tagmat = tagvectors(m.tag_f, tagvec)
     labelmat = m.label_f(Var(hcat(labelvec...)))
-    h0 = concat(1, wordmat, tagmat, labelmat)
-    h1 = tanh(m.W[1](h0))
-    # h2 = tanh(m.W[2](h1))
-    m.W[end](h1)
+    x = concat(1, wordmat, tagmat, labelmat)
+    x = m.nonlinear(m.W[1](x))
+    x = dropout(x, 0.5, istrain)
+    m.W[end](x)
 end
 
-@compat function (m::FeedForward){T}(batch::AbstractVector{State{T}})
+@compat function (m::FeedForward){T}(batch::AbstractVector{State{T}}, istrain=true)
     batch = map(batch) do s
         w, t, l = sparsefeatures(s)
         Sample(w, t, l, -1)
     end
-    m(batch)
+    m(batch, istrain)
 end
 
 function sparsefeatures(s::State)
-    if isfinal(s)
-        return fill(1, 20), fill(1, 20), fill(1, 12)
-    end
-
     # word, tag
     b0 = tokenat(s, s.right)
     b1 = tokenat(s, s.right + 1)
@@ -143,7 +161,7 @@ end
 
 function parsegreedy!{T}(parser::DepParser{T}, ss::Vector{State{T}})
     while !all(isfinal, ss)
-        preds = parser.model(ss)
+        preds = parser.model(ss, false)
         preds.data += [isvalid(ss[j], acttype(i)) ? 0f0 : -Inf32
                        for i = 1:targetsize(parser.model), j = 1:length(ss)]
         bestacts = argmax(preds.data, 1)
@@ -173,12 +191,13 @@ typealias Doc Vector{Vector{Token}}
 
 function train!{T}(::Type{FeedForward}, parser::DepParser{T}, trainsents::Doc,
     testsents::Doc=Vector{Token}[]; embed="", batchsize=32, iter=20, progbar=true,
-    opt=SGD(0.01, momentum=0.9), evaliter=100, outfile="parser.dat")
-    # opt=AdaGrad(0.01), evaliter=100, outfile="parser.dat")
+    nonlinear=tanh, sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[1024],
+    topktags=false, opt=AdaGrad(0.01), evaliter=100, outfile="parser.dat")
     info("WILL RUN $iter ITERATIONS")
 
     saver = ModelSaver(outfile)
-    initmodel!(parser, FeedForward, embed=embed)
+    initmodel!(parser, FeedForward, embed, topktags,
+               nonlinear, sparsesizes, embedsizes, hiddensizes)
     trainsamples = map(trainsents) do s
         res = Sample[]
         s = State(s, parser)

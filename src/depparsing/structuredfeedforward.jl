@@ -1,7 +1,4 @@
 
-"""
-Globally Normalized Transition-Based Neural Networks, ACL, 2016
-"""
 # used in beamsearch
 import Base.(<)
 (<)(x::Var, y::Var) = (<)(x.data[1], y.data[1])
@@ -92,8 +89,8 @@ function beamsearch{T}(parser::DepParser, ss::AbstractVector{T}, beamsize::Int, 
 end
 
 function train!{T}(::Type{StructuredFeedForward}, parser::DepParser{T}, trainsents::Doc,
-    testsents::Doc=Vector{Token}[]; embed="", beamsize=31, batchsize=32, iter=20,
-    progbar=true, opt=SGD(0.0001, momentum=0.9), evaliter=100, outfile="parser.dat")
+    testsents::Doc=Vector{Token}[]; beamsize=31, batchsize=32, iter=20,
+    progbar=true, opt=SGD(0.0005, 0.9), evaliter=100, outfile="parser.dat")
     info("WILL RUN $iter ITERATIONS")
 
     saver = ModelSaver(outfile)
@@ -124,10 +121,12 @@ function train!{T}(::Type{StructuredFeedForward}, parser::DepParser{T}, trainsen
             info("**ITER $i TESTING**")
             res = decode(StructuredFeedForward, parser, testsents,
                              beamsize=beamsize, batchsize=batchsize)
+            res = convert(Array{State{T}}, res)
             uas, las = evaluate(parser, res)
             saver(parser, uas)
         end
         println()
+        opt.rate *= 0.96 # step-wise decay
     end
 end
 

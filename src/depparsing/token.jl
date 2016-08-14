@@ -1,12 +1,13 @@
 
 type Token
     word::Int
-    tag::Int
+    tag # ::Int
     head::Int
     label::Int
 end
 
 roottoken = Token(2, 1, 0, 1) # use PADDING
+
 
 function readconll(parser::DepParser, path::AbstractString; train=true)
     doc = Vector{Token}[]
@@ -17,7 +18,7 @@ function readconll(parser::DepParser, path::AbstractString; train=true)
             push!(doc, Token[])
         else
             items = split(line)
-            word, tag, head, label = items[2], items[4], items[7], items[8]
+            word, tag, head, label = items[2], items[5], items[7], items[8]
             word = replace(lowercase(word), r"\d", "0")
             wordid = get(parser.words, word, 1) # words[1] == UNKNOWN
             tagid = train ? push!(parser.tags, tag) : get(parser.tags, tag, 1)
