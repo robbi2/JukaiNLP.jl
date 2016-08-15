@@ -2,12 +2,14 @@ module Tagging
 
 importall ..JukaiNLP
 using Compat
-import Compat.String
 using Merlin
+import Compat.String
 
 export train, Tagger
 
-include("io.jl")
+include("token.jl")
+include("wordcharcnn.jl")
 include("tagger.jl")
+include("train.jl")
 
 end

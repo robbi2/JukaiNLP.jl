@@ -4,13 +4,15 @@ using JukaiNLP
 using JukaiNLP: Tokenization, Tagging
 using JLD
 
-g = @graph begin
-    relu(:x)
-end
-g.args[1] = :relu
+# setup tagger
+dirpath = Pkg.dir("JukaiNLP")
+t = Tagger()
 
-f = compile(g, :x)
-JLD.save(modelpath, "tokenizer", g)
+trainpath = "C:/Users/shindo/Dropbox/tagging/wsj_00-18.conll"
+traindata = readconll(trainpath, [2,5])[1:10000]
+testpath = "C:/Users/shindo/Dropbox/tagging/wsj_22-24.conll"
+testdata = readconll(testpath, [2,5])
+Tagging.train(t, 30, traindata, testdata)
 
 # setup tokenizer
 dirpath = Pkg.dir("JukaiNLP")
