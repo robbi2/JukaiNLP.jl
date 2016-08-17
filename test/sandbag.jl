@@ -8,11 +8,12 @@ using JLD
 dirpath = Pkg.dir("JukaiNLP")
 t = Tagger()
 
-trainpath = "C:/Users/shindo/Dropbox/tagging/wsj_00-18.conll"
-traindata = readconll(trainpath, [2,5])[1:10000]
-testpath = "C:/Users/shindo/Dropbox/tagging/wsj_22-24.conll"
+trainpath = "C:/Users/hshindo/Dropbox/tagging/wsj_00-18.conll"
+traindata = readconll(trainpath, [2,5])
+testpath = "C:/Users/hshindo/Dropbox/tagging/wsj_22-24.conll"
 testdata = readconll(testpath, [2,5])
-Tagging.train(t, 30, traindata, testdata)
+Tagging.train(t, 5, traindata, testdata)
+return
 
 # setup tokenizer
 dirpath = Pkg.dir("JukaiNLP")

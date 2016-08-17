@@ -8,26 +8,26 @@ function train(t::Tagger, nepochs::Int, traindata::Vector, testdata::Vector)
         end
     end
 
+    info("# words: $(length(t.word_dict))")
+    info("# chars: $(length(t.char_dict))")
+    info("# tags: $(length(t.tag_dict))")
+
     opt = SGD(0.0)
     for epoch = 1:nepochs
         opt.rate = 0.0075 / epoch
-        data_xx = setunkown(data_x, t.word_dict["UNKNOWN"])
+        #data_xx = setunkown(data_x, t.word_dict["UNKNOWN"])
 
         println("epoch: $(epoch)")
-        loss = fit(t.model, crossentropy, opt, data_xx, data_y)
+        loss = fit(t.model, crossentropy, opt, data_x, data_y)
         println("loss: $(loss)")
+
+        quantize!(t.model.wordfun)
 
         pred_z = Int[]
         for x in test_x
             append!(pred_z, t(x))
         end
         acc = accuracy(pred_y, pred_z)
-        #data_z = map(data_xx) do x
-        #    argmax(t.model(x).data, 1)
-        #end
-        #data_yy, data_zz = [data_y...], [data_z...]
-        #c = count(x -> x[1] == x[2], zip(data_yy,data_zz))
-        #acc = c / length(data_yy)
 
         println("test acc.: $(acc)")
         println("")
@@ -42,7 +42,10 @@ function encode(t::Tagger, doc::Vector)
         for items in sent
             word, tag = items[1], items[2]
             word0 = replace(word, r"[0-9]", '0') |> lowercase
-            wordid = push!(t.word_dict, word0)
+            #wordid = push!(t.word_dict, word0)
+
+            wordid = get(t.word_dict, word0, 1) # experimental
+
             chars = Vector{Char}(word)
             charids = map(c -> push!(t.char_dict,string(c)), chars)
             tagid = push!(t.tag_dict, tag)

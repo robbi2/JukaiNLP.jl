@@ -9,6 +9,7 @@ export train, Tagger
 
 include("token.jl")
 include("wordcharcnn.jl")
+include("model.jl")
 include("tagger.jl")
 include("train.jl")
 

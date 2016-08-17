@@ -6,9 +6,12 @@ type Tagger
 end
 
 function Tagger()
-    word_dict = IdDict(map(UTF8String, ["UNKNOWN"]))
+    path = joinpath(Pkg.dir("JukaiNLP"),"dict/en-word_nyt.dict")
+    word_dict = load(IdDict, path)
+    
+    #word_dict = IdDict(map(UTF8String, ["UNKNOWN"]))
     char_dict = IdDict(map(UTF8String, ["UNKNOWN","="]))
-    Tagger(word_dict, char_dict, IdDict(), WordCharCNN())
+    Tagger(word_dict, char_dict, IdDict(), POSModel(""))
 end
 
 @compat function (t::Tagger)(words::Vector)

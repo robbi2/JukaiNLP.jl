@@ -1,7 +1,7 @@
 type WordCharCNN
-  wordfun
-  charfun
-  sentfun
+    wordfun
+    charfun
+    sentfun
 end
 
 function WordCharCNN()
