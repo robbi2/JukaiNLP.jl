@@ -8,8 +8,8 @@ end
 function Tagger(filename)
     words = h5read(filename, "str")
     word_dict = IdDict(words)
-    char_dict = IdDict(map(UTF8String, ["UNKNOWN","="]))
-    Tagger(word_dict, char_dict, IdDict(), POSModel(""))
+    char_dict = IdDict(String["UNKNOWN","="])
+    Tagger(word_dict, char_dict, IdDict(), POSModel(filename))
 end
 
 function (t::Tagger)(words::Vector)

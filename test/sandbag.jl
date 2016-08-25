@@ -4,10 +4,8 @@ using JukaiNLP
 using JukaiNLP: Tokenization, Tagging
 using HDF5
 
-filename = joinpath(Pkg.dir("JukaiNLP"), ".corpus/nyt100.h5")
-words = h5read(filename, "str")
-
-path = joinpath(Pkg.dir("JukaiNLP"), ".corpus/nyt100.h5")
+path = joinpath(Pkg.dir("JukaiNLP"), ".corpus/nyt100.lst")
+e = Embedding(path,Float32)
 a = h5read(path, "Merlin")
 
 path = "C:/Users/hshindo/Desktop/20070723111604AAzUvhb_ans.conll"

@@ -12,16 +12,15 @@ function train(t::Tagger, nepochs::Int, traindata::Vector, testdata::Vector)
     info("# chars: $(length(t.char_dict))")
     info("# tags: $(length(t.tag_dict))")
 
-    opt = SGD(0.0)
+    opt = SGD(0.001, momentum=0.9)
     for epoch = 1:nepochs
-        opt.rate = 0.0075 / epoch
+        opt.rate = 0.001 / epoch
+        #opt.rate = 0.0075 / epoch
         #data_xx = setunkown(data_x, t.word_dict["UNKNOWN"])
 
         println("epoch: $(epoch)")
         loss = fit(t.model, crossentropy, opt, data_x, data_y)
         println("loss: $(loss)")
-
-        #quantize!(t.model.wordfun)
 
         pred_z = Int[]
         for x in test_x

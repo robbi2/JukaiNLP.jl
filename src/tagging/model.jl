@@ -7,19 +7,20 @@ end
 function POSModel(path)
     T = Float32
     w = h5read(path, "vec")
-    wordfun = Embeddings(w)
+    wordfun = Embedding(w)
 
     charfuns = [Embedding(T,100,10), Linear(T,50,50)]
-    charfun = @graph begin
+    g = @graph begin
         x = charfuns[1](:x)
         x = window2d(x, 10,5,1,1,0,2)
         x = charfuns[2](x)
         x = max(x,2)
         x
     end
+    charfun = compile(g, :x)
 
     sentfuns = [Linear(T,750,300), Linear(T,300,45)]
-    sentfun = @graph begin
+    g = @graph begin
         x = concat(1, :wordmat, :charmat)
         x = window2d(x, 150,5,1,1,0,2)
         x = sentfuns[1](x)
@@ -27,6 +28,7 @@ function POSModel(path)
         x = sentfuns[2](x)
         x
     end
+    sentfun = compile(g, :wordmat, :charmat)
     POSModel(wordfun, charfun, sentfun)
 end
 
