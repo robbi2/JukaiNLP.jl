@@ -5,16 +5,14 @@ type Tagger
     model
 end
 
-function Tagger()
-    path = joinpath(Pkg.dir("JukaiNLP"),"dict/en-word_nyt.dict")
-    word_dict = load(IdDict, path)
-    
-    #word_dict = IdDict(map(UTF8String, ["UNKNOWN"]))
+function Tagger(filename)
+    words = h5read(filename, "str")
+    word_dict = IdDict(words)
     char_dict = IdDict(map(UTF8String, ["UNKNOWN","="]))
     Tagger(word_dict, char_dict, IdDict(), POSModel(""))
 end
 
-@compat function (t::Tagger)(words::Vector)
+function (t::Tagger)(words::Vector)
     unkword = t.word_dict["UNKNOWN"]
     tokens::Vector{Token} = map(words) do word
         word0 = replace(word, r"[0-9]", '0') |> lowercase

@@ -11,19 +11,17 @@ function Tokenizer()
         local embed = Embedding(T, 100, 10)
         local conv = Conv(T, (10,7), (1,70), paddims=(0,3))
         local linear = Linear(T, 70, 4)
-        @graph (:chars,) begin
+        @graph begin
             x = Var(reshape(:chars,1,length(:chars)))
             x = embed(x)
-            x = conv(x)
-            x = reshape(x, size(x,2), size(x,3))
-            x = transpose(x)
+            x = 
             x = relu(x)
             x = linear(x)
             x
         end
     end
-    #model = compile(g, :chars)
-    Tokenizer(dict, IOE(), g)
+    model = compile(g, :chars)
+    Tokenizer(dict, IOE(), model)
 end
 
 @compat function (t::Tokenizer)(chars::Vector{Char})

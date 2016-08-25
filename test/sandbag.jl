@@ -2,33 +2,13 @@ workspace()
 using Merlin
 using JukaiNLP
 using JukaiNLP: Tokenization, Tagging
-using JLD
+using HDF5
 
-# setup tagger
-dirpath = Pkg.dir("JukaiNLP")
-t = Tagger()
+filename = joinpath(Pkg.dir("JukaiNLP"), ".corpus/nyt100.h5")
+words = h5read(filename, "str")
 
-trainpath = "C:/Users/hshindo/Dropbox/tagging/wsj_00-18.conll"
-traindata = readconll(trainpath, [2,5])
-testpath = "C:/Users/hshindo/Dropbox/tagging/wsj_22-24.conll"
-testdata = readconll(testpath, [2,5])
-Tagging.train(t, 5, traindata, testdata)
-return
+path = joinpath(Pkg.dir("JukaiNLP"), ".corpus/nyt100.h5")
+a = h5read(path, "Merlin")
 
-# setup tokenizer
-dirpath = Pkg.dir("JukaiNLP")
-t = Tokenizer()
-
-# training
-trainpath = "$(dirpath)/corpus/mini-training-set.conll"
-data = readconll(trainpath, [2,11])
-train(t, 100, data)
-modelpath = "C:/Users/shindo/Desktop/tokenizer_20.jld"
-JLD.save(modelpath, "tokenizer", t.model)
-t.model.code
-
-# testing
-t = JLD.load(modelpath, "tokenizer")
-str = "Pierre Vinken, 61 years old, will join the board.\nI have a pen.\n"
-result = t(str)
-join(map(r -> str[r], result), " ")
+path = "C:/Users/hshindo/Desktop/20070723111604AAzUvhb_ans.conll"
+rawtext(path) |> println

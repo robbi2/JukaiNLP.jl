@@ -21,7 +21,7 @@ function train(t::Tagger, nepochs::Int, traindata::Vector, testdata::Vector)
         loss = fit(t.model, crossentropy, opt, data_x, data_y)
         println("loss: $(loss)")
 
-        quantize!(t.model.wordfun)
+        #quantize!(t.model.wordfun)
 
         pred_z = Int[]
         for x in test_x
