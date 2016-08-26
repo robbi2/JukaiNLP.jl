@@ -12,9 +12,9 @@ function train(t::Tagger, nepochs::Int, traindata::Vector, testdata::Vector)
     info("# chars: $(length(t.char_dict))")
     info("# tags: $(length(t.tag_dict))")
 
-    opt = SGD(0.001, momentum=0.9)
+    opt = SGD(0.001, momentum=0.0)
     for epoch = 1:nepochs
-        opt.rate = 0.001 / epoch
+        opt.rate = 0.0075 / epoch
         #opt.rate = 0.0075 / epoch
         #data_xx = setunkown(data_x, t.word_dict["UNKNOWN"])
 

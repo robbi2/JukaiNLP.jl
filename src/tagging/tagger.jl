@@ -5,11 +5,11 @@ type Tagger
     model
 end
 
-function Tagger(filename)
+function Tagger(filename, model)
     words = h5read(filename, "str")
     word_dict = IdDict(words)
     char_dict = IdDict(String["UNKNOWN","="])
-    Tagger(word_dict, char_dict, IdDict(), POSModel(filename))
+    Tagger(word_dict, char_dict, IdDict(), model)
 end
 
 function (t::Tagger)(words::Vector)

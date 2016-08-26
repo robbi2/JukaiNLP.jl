@@ -4,9 +4,8 @@ type POSModel
     sentfun
 end
 
-function POSModel(path)
+function POSModel(w)
     T = Float32
-    w = h5read(path, "vec")
     wordfun = Embedding(w)
 
     charfuns = [Embedding(T,100,10), Linear(T,50,50)]
