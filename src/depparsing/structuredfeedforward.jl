@@ -13,8 +13,8 @@ function initmodel!(parser::DepParser, model::Type{StructuredFeedForward})
     parser.model = StructuredFeedForward(parser.model, Var([0f0]), 1)
 end
 
-@compat function (m::StructuredFeedForward){T}(ss::AbstractVector{State{T}})
-    m.logits = m.feedforward(ss)
+@compat function (m::StructuredFeedForward){T}(ss::AbstractVector{State{T}}, istrain=true)
+    m.logits = m.feedforward(ss, istrain)
     m.beamid = 1
 end
 
@@ -53,7 +53,7 @@ function earlyupdate!(opt::SGD, golds::Vector{Chart}, preds::Vector{Chart}, aliv
 end
 
 import TransitionParser.beamsearch
-function beamsearch{T}(parser::DepParser, ss::AbstractVector{T}, beamsize::Int, expand::Function)
+function beamsearch{T}(parser::DepParser, ss::AbstractVector{T}, beamsize::Int, expand::Function; istrain=true)
     lessthan{T}(x::T, y::T) = x.score > y.score
     charts = Vector{Vector{T}}[]
     for (i, s) in enumerate(ss)
@@ -65,7 +65,7 @@ function beamsearch{T}(parser::DepParser, ss::AbstractVector{T}, beamsize::Int, 
     k = 1
     while any(v -> v == k-1, alive)
         offset = 0
-        parser.model(vcat([chart[k] for chart in charts]...))
+        parser.model(vcat([chart[k] for chart in charts]...), istrain)
         for cid = 1:length(charts)
             cid > 1 && ( offset += length(charts[cid-1][k]) )
             chart = charts[cid]
@@ -139,7 +139,7 @@ function decode{T}(::Type{StructuredFeedForward}, parser::DepParser{T}, sents::D
         progbar && next!(p)
         batch = sub(sents, i:min(i+batchsize-1, length(sents)))
         ss = map(s -> State(s, parser), batch)
-        preds, _ = beamsearch(parser, ss, beamsize, expandpred)
+        preds, _ = beamsearch(parser, ss, beamsize, expandpred, istrain=false)
         append!(res, map(chart -> chart[end][1], preds))
         preds = 0 # gc
     end

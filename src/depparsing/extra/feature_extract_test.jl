@@ -31,6 +31,10 @@ label(l) = getkey(parser.labels, l)
 @test word(tokenat(s, s.rchild.lchild.lsibl.lchild).word) == "police"
 @test word(tokenat(s, s.rchild.lchild.lsibl.lsibl.lchild).word) == "commander"
 @test word(tokenat(s, s.rchild.lchild.lsibl.lsibl.lsibl.lchild).word) == "abdul"
+@test word(tokenat(s, s.rchild.rchild).word) == "."
+@test word(tokenat(s, s.rchild.rsibl.rchild).word) == "found"
+@test word(tokenat(s, s.rchild.rsibl.rchild.rchild).word) == "in"
+
 
 @test label(labelat(s, s.rchild)) == "ROOT"
 @test label(labelat(s, s.rchild.lsibl)) == "nsubj"
@@ -40,4 +44,6 @@ label(l) = getkey(parser.labels, l)
 @test label(labelat(s, s.rchild.lsibl.left.lsibl.lsibl.lsibl.lsibl)) == "nn" # abdul
 @test word(tokenat(s, s.rchild.lsibl.left.lsibl.lsibl.lsibl.lsibl.left).word) == "abdul" # abdul
 @test label(labelat(s, s.rchild.rchild)) == "punct"
+@test label(labelat(s, s.rchild.rsibl.rchild)) == "ccomp" #found
+@test label(labelat(s, s.rchild.rsibl.rchild.rchild)) == "prep" #in
 

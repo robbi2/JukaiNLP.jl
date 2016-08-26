@@ -2,8 +2,8 @@
 ccall(:jl_exit_on_sigint, Void, (Cint,), 0)
 
 push!(LOAD_PATH, "..")
-using JukaiNLP: DepParser, Perceptron, Unlabeled, Labeled, FeedForward, StructuredFeedForward
-using JukaiNLP: readconll, train!, decode, evaluate, toconll, initmodel!
+using JukaiNLP: DepParser, Perceptron, Unlabeled, Labeled, FeedForward, UnlabeledFeedForward
+using JukaiNLP: readconll, train!, decode, evaluate, toconll, initmodel!, MyAdaGrad
 using JukaiNLP.DepParsing: Token, readconll_withprobs
 using Merlin
 # using JLD
@@ -13,7 +13,7 @@ doc = """shift-reduce parser
 
 Usage:
     demo.jl train (--labeled | --unlabeled) --nn --worddict <worddict> <train_path> <model_path> [<test_path>] [--iter=<iter>] [--embedfile=<embed_file>] [--batchsize=<batch>] [--evaliter=<eval>] [--nonlinearity=<nonlinear>] [--hiddenlayers=<hidden>] [--embedlayers=<embedlayers>] [--optimizer=<opt>] [--learnrate=<rate>] [--momentum=<momentum>] [--tagdict=<tagdict>] [--train-tag-probs=<trainprobs>] [--test-tag-probs=<testprobs>] [--use-topktags=<k>]
-    demo.jl train (--labeled | --unlabeled) --struct-nn <train_path> <local_model> <model_path> [<test_path>] [--iter=<iter>] [--batchsize=<batch>] [--evaliter=<eval>] [--beamsize=<beam>] [--nonlinearity=<nonlinear>] [--optimizer=<opt>] [--learnrate=<rate>] [--momentum=<momentum>] [--use-topktags=<k>]
+    demo.jl train (--labeled | --unlabeled) --struct-nn <train_path> <local_model> <model_path> [<test_path>] [--iter=<iter>] [--batchsize=<batch>] [--evaliter=<eval>] [--beamsize=<beam>] [--nonlinearity=<nonlinear>] [--optimizer=<opt>] [--learnrate=<rate>] [--momentum=<momentum>] [--tagdict=<tagdict>] [--train-tag-probs=<trainprobs>] [--test-tag-probs=<testprobs>] [--use-topktags=<k>]
     demo.jl train (--labeled | --unlabeled) --perceptron --worddict <worddict> <train_path> <model_path> [<test_path>] [--iter=<iter>]
 
     demo.jl test <test_path> <model_path>
@@ -65,17 +65,20 @@ embedlayers = args["--embedlayers"] == nothing ? [50,50,50] :
 learnrate = args["--learnrate"] != nothing ? parse(Float64, args["--learnrate"]) : 0.001
 momentum = args["--momentum"] != nothing ? parse(Float64, args["--momentum"]) : 0.9
 
-opt = args["--optimizer"] == nothing ? SGD(learnrate, momentum) :
-            lowercase(args["--optimizer"]) == "sgd" ? SGD(learnrate, momentum) :
-            lowercase(args["--optimizer"]) == "adagrad" ? AdaGrad(learnrate) :
+opt = args["--optimizer"] == nothing ? SGD(learnrate, momentum=momentum) :
+            lowercase(args["--optimizer"]) == "sgd" ? SGD(learnrate, momentum=momentum) :
+            lowercase(args["--optimizer"]) == "adagrad" ? MyAdaGrad(learnrate) :
             throw("no support for $(args["--optimizer"])")
 if args["train"]
 
     if args["--nn"]
         parser = DepParser(parsertype, worddict)
-        trainsents = readconll_withprobs(parser, tagfile, trainfile, trainprob, topk=topk)
+        # trainsents = readconll_withprobs(parser, tagfile, trainfile, trainprob, topk=topk)
+        # testsents = testfile == nothing ? Vector{Token}[] :
+        # readconll_withprobs(parser, tagfile, testfile, testprob, topk=topk, train=false)
+        trainsents = readconll(parser, trainfile)
         testsents = testfile == nothing ? Vector{Token}[] :
-        readconll_withprobs(parser, tagfile, testfile, testprob, topk=topk, train=false)
+                        readconll(parser, testfile, train=false)
         train!(FeedForward, parser, trainsents, testsents, embed=embedfile,
                 nonlinear=nonlinear, embedsizes=embedlayers, hiddensizes=hiddenlayers,
                 topktags=topk!=1, opt=opt, iter=iter, batchsize=batchsize,
@@ -88,14 +91,13 @@ if args["train"]
         testsents = testfile == nothing ? Vector{Token}[] :
         readconll_withprobs(parser, tagfile, testfile, testprob, topk=topk, train=false)
         train!(StructuredFeedForward, parser, trainsents, testsents, beamsize=beamsize,
-                nonlinear=nonlinear, opt=opt, iter=iter, batchsize=batchsize,
-                evaliter=evaliter, outfile=modelpath)
+                opt=opt, iter=iter, batchsize=batchsize, evaliter=evaliter, outfile=modelpath)
 
     elseif args["--perceptron"]
         parser = DepParser(parsertype, worddict)
-        trainsents = readconll_withprobs(parser, tagfile, trainfile, trainprob, topk=1)
+        trainsents = readconll(parser, trainfile)
         testsents = testfile == nothing ? Vector{Token}[] :
-        readconll_withprobs(parser, tagfile, testfile, testprob, topk=1, train=false)
+                        readconll(parser, testfile)
         train!(Perceptron, parser, trainsents, testsents,
             iter=iter, outfile=modelpath)
     end

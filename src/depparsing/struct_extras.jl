@@ -63,7 +63,6 @@ function readconll_withprobs(parser, tagpath, conllpath, probpath; topk=1, train
         @assert length(sent) == length(probs)
         for (token, prob) in zip(sent, probs)
             form = getkey(parser.words, token.word)
-            @assert prob[1] == form || form == "UNKNOWN"
             token.tag = prob[2]
         end
     end

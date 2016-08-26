@@ -118,8 +118,9 @@ typealias Doc Vector{Vector{Token}}
 
 function train!{T}(::Type{Perceptron}, parser::DepParser{T}, trainsents::Doc,
     testsents::Doc=Vector{Token}[]; beamsize=10, iter=20, progbar=true, outfile="")
-    # initialize parser.model
+
     initmodel!(parser, Perceptron)
+    projectivize!(trainsents)
 
     outfile == "" || ( saver = ModelSaver(outfile) )
     info("LOADING SENTENCES")

@@ -10,6 +10,7 @@ type DepParser{T <: ParserType}
     labels::IdDict{AbstractString}
     parsertype::Type{T}
     model
+    labeler
 
     function DepParser(words, tags, labels, parsertype)
         new(words, tags, labels, parsertype)
@@ -21,7 +22,7 @@ function DepParser{T <: ParserType}(parsertype::Type{T}, path::AbstractString)
     tags = IdDict{AbstractString}()
     labels = IdDict{AbstractString}()
     push!(tags, "NONE")
-    push!(labels, "NONE")
+    # push!(labels, "NONE")
     DepParser{T}(words, tags, labels, parsertype)
 end
 

@@ -1,3 +1,4 @@
+const NOOP = 0
 const SHIFT = 1
 const REDUCEL = 2
 const REDUCER = 3
@@ -12,7 +13,9 @@ reducer(label::Int) = (label << 1) | 1
 reducer() = REDUCER
 
 # retrieve action type 1, 2 or 3
-acttype(action::Int) = action == 1 ? SHIFT : 2 + (action & 1)
+acttype(action::Int) = action == 0 ? NOOP :
+                       action == 1 ? SHIFT :
+                       2 + (action & 1)
 
 # retrieve label id
 tolabel(action::Int) = action >> 1
@@ -31,7 +34,6 @@ type State{T <: ParserType}
     parser::DepParser
     prev::State{T}
     prevact::Int
-    head::State{T}
     feat::Vector{Int}
 
     function State(step, score, top, right)
@@ -39,9 +41,9 @@ type State{T <: ParserType}
     end
 
     function State(step, score, top, right, left,
-        lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact, head)
+        lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact)
         new(step, score, top, right, left,
-            lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact, head)
+            lchild, rchild, lsibl, rsibl, tokens, parser, prev, prevact)
     end
 end
 
@@ -50,8 +52,7 @@ end
 function nullstate_(T::Type)
     s = State{T}(0, 0.0, 0, 0)
     s.left, s.lchild, s.rchild = s, s, s
-    s.lsibl, s.rsibl, s.prevact = s, s, reducel(1)
-    s.head = s
+    s.lsibl, s.rsibl, s.prevact = s, s, NOOP
     return s
 end
 const labeled_ = nullstate_(Labeled)
@@ -67,7 +68,7 @@ function State{T}(tokens::Vector{Token}, parser::DepParser{T})
     score = parser.model == Perceptron ? 0.0 : Var([0f0])
     ns = nullstate(T)
     State{T}(1, score, 0, 1, ns, ns, ns,
-        ns, ns, tokens, parser, ns, reducel(1), ns)
+        ns, ns, tokens, parser, ns, NOOP)
 end
 
 # to retrieve result
@@ -114,19 +115,18 @@ function expand{T}(s::State{T}, act::Int)
     atype = acttype(act)
     top, right, left, lchild, rchild, lsibl, rsibl = begin
         if atype == SHIFT
-            ns = nullstate(T)
-            s.right, s.right+1, s, ns, ns, ns, ns
+             s.right, s.right+1, s, nullstate(T), nullstate(T), nullstate(T), nullstate(T)
         elseif atype == REDUCEL
-            s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl
+             s.top, s.right, s.left.left, s.left, s.rchild, s, s.rsibl
         elseif atype == REDUCER
-            s.left.top, s.right, s.left.left, s.left.lchild, s, s.left.lsibl, s.left
+             s.left.top, s.right, s.left.left, s.left.lchild, s, s.left.lsibl, s.left
         else
             throw("Invalid action: $(act).")
         end
     end
     score = s.parser.model(s, act)
     State{T}(s.step+1, score, top, right, left, lchild,
-             rchild, lsibl, rsibl, s.tokens, s.parser, s, act, nullstate(T))
+        rchild, lsibl, rsibl, s.tokens, s.parser, s, act)
 end
 
 # check if buffer is empty
