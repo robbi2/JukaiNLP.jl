@@ -63,3 +63,5 @@ function Base.push!(d::IdDict, key)
     end
     id
 end
+
+Base.append!(d::IdDict, keys::Vector) = map(k -> push!(d,k), keys)
