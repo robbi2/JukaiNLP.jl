@@ -169,9 +169,9 @@ end
 typealias Doc Vector{Vector{Token}}
 
 function train!{T}(::Type{FeedForward}, parser::DepParser{T}, trainsents::Doc,
-    testsents::Doc=Vector{Token}[]; embed="", batchsize=32, iter=20, progbar=true,
-    nonlinear=tanh, sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[1024],
-    topktags=false, opt=MyAdaGrad(0.01), evaliter=100, outfile="parser.dat")
+    testsents::Doc=Vector{Token}[]; embed="", batchsize=10000, iter=20000,
+    nonlinear=relu, sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[1024],
+    topktags=false, opt=MyAdaGrad(0.01), evaliter=200, outfile="parser.dat")
     info("WILL RUN $iter ITERATIONS")
 
     saver = ModelSaver(outfile)

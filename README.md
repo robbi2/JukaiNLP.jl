@@ -63,7 +63,11 @@ initmodel!(parser, Perceptron)
 
 n = div(length(sents), 10) * 8
 trainsents, testsents = sents[1:n], sents[n+1:end]
-train!(parser, trainsents, iter=20)
+train!(parser, trainsents)
+
+actually train! has many keyword arguments
+
+train!(parser, trainsents, nonlinear=tanh, hiddensizes=[200])
 
 res = parser(testsents)
 evaluate(parser, res)
