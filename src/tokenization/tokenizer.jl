@@ -5,26 +5,24 @@ type Tokenizer
 end
 
 function Tokenizer()
-    dict = IdDict(map(UTF8String, ["UNKNOWN", " ", "\n"]))
-    g = begin
-        T = Float32
-        local embed = Embedding(T, 100, 10)
-        local conv = Conv(T, (10,7), (1,70), paddims=(0,3))
-        local linear = Linear(T, 70, 4)
-        @graph begin
-            x = Var(reshape(:chars,1,length(:chars)))
-            x = embed(x)
-            x = 
-            x = relu(x)
-            x = linear(x)
-            x
-        end
+    dict = IdDict(String["UNKNOWN", " ", "\n"])
+    T = Float32
+    embed = Embedding(T, 100, 10)
+    ls = [Linear(T,70,70), Linear(T,70,4)]
+    g = @graph begin
+        chars = identity(:chars)
+        x = Var(reshape(chars,1,length(chars)))
+        x = embed(x)
+        x = window2d(x,10,7,1,1,0,3)
+        x = ls[1](x)
+        x = relu(x)
+        x = ls[2](x)
+        x
     end
-    model = compile(g, :chars)
-    Tokenizer(dict, IOE(), model)
+    Tokenizer(dict, IOE(), g)
 end
 
-@compat function (t::Tokenizer)(chars::Vector{Char})
+function (t::Tokenizer)(chars::Vector{Char})
     unk = t.dict["UNKNOWN"]
     x = map(chars) do c
         get(t.dict, string(c), unk)
@@ -33,4 +31,4 @@ end
     tags = argmax(y,1)
     decode(t.tagset, tags)
 end
-@compat (t::Tokenizer)(str::String) = t(Vector{Char}(str))
+(t::Tokenizer)(str::String) = t(Vector{Char}(str))

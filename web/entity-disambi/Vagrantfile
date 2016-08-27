@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "dummy"
+
+    config.vm.provider "aws" do |aws, override|
+        aws.instance_type = "m4.2xlarge"
+        aws.region = "ap-northeast-1"
+        aws.availability_zone = "ap-northeast-1b"
+        aws.subnet_id = "subnet-7806fc10"
+        aws.ami = "ami-401d1241"  # Ousia_CentOS7_x64_ebs_2014-12-15T09-26-12Z
+        aws.access_key_id = ENV["AWS_ACCESS_KEY"]
+        aws.secret_access_key = ENV["AWS_SECRET_ACCESS_KEY"]
+        aws.keypair_name = ENV["AWS_KEYPAIR_NAME"]
+        aws.tags = {
+          "Name" => "entity-disambi"
+        }
+        aws.block_device_mapping = [
+            {
+                'DeviceName' => '/dev/sda1',
+                'Ebs.VolumeSize' => 150,
+                'Ebs.VolumeType' => 'gp2',
+                'Ebs.DeleteOnTermination' => 'true'
+            }
+        ]
+        override.ssh.username = "centos"
+        override.ssh.private_key_path = ENV["SSH_PRIVATE_KEY_PATH"]
+    end
+
+    config.vm.synced_folder ".", "/code",
+        type: "rsync",
+        owner: "centos",
+        rsync__auto: true,
+        rsync__chown: true,
+        rsync__exclude: [".venv/", "dist/", "data/", "*.egg-info", ".git/",
+                         ".vagrant/", "*.pyc", "*.so", "*.sublime-*", "*.bz2"],
+        rsync__args: ["--archive", "-z", "--delete"]
+
+    config.vm.provision "ansible" do |ansible|
+        ansible.playbook = "playbooks/site.yml"
+        ansible.sudo = true
+        ansible.groups = {
+            "db_builder" => ["default"]
+        }
+    end
+end

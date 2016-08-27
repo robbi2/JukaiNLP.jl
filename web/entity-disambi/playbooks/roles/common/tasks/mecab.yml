@@ -1,0 +1,26 @@
+---
+- unarchive: src=mecab/mecab-0.98.tar.gz dest={{ work_dir }}
+- name: Install MeCab
+  command: "{{ item }} creates=/usr/local/bin/mecab chdir={{ work_dir }}/mecab-0.98"
+  with_items:
+   - ./configure
+   - make
+   - make install
+  register: mecab_installation
+
+- name: Reload MeCab lib
+  command: ldconfig
+  when: mecab_installation.changed
+
+- unarchive: src=mecab/mecab-ipadic-2.7.0-20070801.tar.gz dest={{ work_dir }}
+- name: Install MeCab IPA dic
+  command: "{{ item }}"
+  with_items:
+   - ./configure --with-charset=utf8 --enable-utf8-only
+   - make
+   - make install
+  args:
+    chdir: "{{ work_dir }}/mecab-ipadic-2.7.0-20070801"
+    creates: /usr/local/lib/mecab/dic/ipadic
+  environment:
+    PATH: /usr/local/bin:{{ ansible_env.PATH }}

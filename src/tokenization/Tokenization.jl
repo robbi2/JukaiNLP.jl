@@ -1,8 +1,6 @@
 module Tokenization
 
 importall ..JukaiNLP
-using Compat
-import Compat.String
 using Merlin
 
 export train, Tokenizer

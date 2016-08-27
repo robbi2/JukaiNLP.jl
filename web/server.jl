@@ -1,46 +1,137 @@
 using HttpServer
 using WebSockets
-using JSON
-using JukaiNLP
 using Merlin
+using JukaiNLP
+using JukaiNLP.TokenizationSentence
+using JukaiNLP.Tagging
+using JLD
+using JSON
+using PyCall
 
-const tokenizer = load("models/tokenizer_50.jld", "tokenizer")
+unshift!(PyVector(pyimport("sys")["path"]), "mitie-v0.2-python-2.7")
+unshift!(PyVector(pyimport("sys")["path"]), "entity-disambi")
+@pyimport NER
+is_linux() && (@pyimport mymodule)
+
+type Token
+    form::String
+    cat::String
+    ne::Vector{Any}
+    dep::Int
+end
+
+Token(form::String) = Token(form, "", [], 0)
+
+function todict(t::Token)
+    Dict("form"=>t.form, "cat"=>t.cat, "ne"=>t.ne)
+end
+
+const samples = [
+    Token("Pierre", "NNP", [], 2),
+    Token("Vinken", "NNP", [], 8),
+    Token(",", ",", [], 2),
+    Token("61", "CD", [], 5),
+    Token("years", "NNS", [], 6),
+    Token("old", "JJ", [], 2),
+    Token(",", ",", [], 2),
+    Token("will", "MD", [], 0),
+    Token("join", "VB", [], 8),
+    Token("the", "DT", [], 11),
+    Token("board", "NN", [], 9),
+    Token("Nov.", "NNP", [], 9),
+    Token("29", "CD", [], 12),
+    Token(".", ".", [], 8)
+]
+const samples2 = [ "Diamond", "Shamrock", "Offshore", "Partners","said","it",
+    "had","discovered","gas","offshore","Louisiana", "."]
+
+function load_tokenizer()
+    println("loading tokenizer...")
+    path = joinpath(Pkg.dir("JukaiNLP"), "web/models")
+    model = h5load("$(path)/tokenizer.h5")
+    dict = JLD.load("$(path)/tokenizer.jld", "tokenizer")
+    Tokenizer(dict, model)
+end
+const tokenizer = load_tokenizer()
+
+function load_postagger()
+    println("loading postagger...")
+    path = joinpath(Pkg.dir("JukaiNLP"), "web/models")
+    m = h5load("$(path)/postagger.h5")
+    model = Tagging.POSModel(m["wordfun"],m["charfun"],m["sentfun"])
+    path = "C:/Users/hshindo/Desktop/postagger.jld"
+    t = JLD.load(path, "postagger")
+    t.model = model
+    t
+end
+const postagger = load_postagger()
+
+function setpostag!(tokens::Vector{Token}, forms::Vector{String})
+    tags = postagger(forms)
+    for i = 1:length(tokens)
+        tokens[i].cat = tags[i]
+    end
+end
+
+function setner!(tokens::Vector{Token}, forms::Vector{String})
+    ners = NER.predict(forms)
+    for (range,tag) in ners
+        tokens[start(range)+1].ne = Any[tag,length(range)]
+        if is_linux()
+            #target = forms[start(range)+1:last(range)+1]
+            #mymodule.predict(target, forms)
+        end
+    end
+end
+
+include("conf.jl")
+
+const filepath = dirname(@__FILE__)
+const clients = Dict()
+const conf = begin
+    e = readconf(joinpath(filepath,"conf/visual.conf"))
+    d = Dict("entity_types" => e)
+    #=
+    "relation_types" => [
+        Dict(
+            "type" => "Anaphora",
+            "labels" => ["Anaphora", "Ana"],
+            "dashArray" => "3,3",
+            "color" => "purple",
+            "args" => [
+                Dict("role" => "Anaphor", "targets" => ["Person"]),
+                Dict("role" => "Entity", "targets" => ["Person"])
+            ]
+        )
+    ]
+    =#
+    JSON.json(d)
+end
 
 wsh = WebSocketHandler() do req, client
     println("Client: $(client.id) is connected.")
+    write(client, conf)
     while true
         #println("Request from $(client.id) recieved.")
         msg = bytestring(read(client))
-        chars = convert(Vector{Char}, msg)
-        doc = decode(tokenizer, chars)
-        doc = map(x -> map(to_dict, x), doc)
+        length(msg) > 1000 && continue
+        chars = Vector{Char}(msg)
+
+        doc = tokenizer(chars)
+        doc = map(doc) do sent
+            tokens = map(w -> Token(w), sent)
+            setpostag!(tokens, sent)
+            setner!(tokens, sent)
+            map(todict, tokens)
+        end
         res = JSON.json(doc)
-        #println(res)
         write(client, res)
     end
 end
 
-onepage = readall(joinpath(dirname(@__FILE__), "index.html"))
+onepage = readstring(joinpath(dirname(@__FILE__), "index.html"))
 httph = HttpHandler() do req::Request, res::Response
     Response(onepage)
 end
 server = Server(httph, wsh)
 run(server, 3000)
-
-#=
-const sample_tokens = [
-  Token(1, 6, 1, "Pierre", 1, "NNP", -2, 2),
-  Token(2, "Vinken", 2, "NNP", -1, 8),
-  Token(3, ",", 3, ",", -2, 2),
-  Token(4, "61", 4, "CD", -4, 5),
-  Token(5, "years", 5, "NNS", -3, 6),
-  Token(6, "old", 6, "JJ", -2, 2),
-  Token(7, ",", 7, ",", -2, 2),
-  Token(8, "will", 8, "MD", 0, 0),
-  Token(9, "join", 9, "VB", -1, 8),
-  Token(10, "the", 10, "DT", -3, 11),
-  Token(11, "board", 11, "NN", -2, 9),
-  Token(12, "Nov.", 12, "NNP", -2, 9),
-  Token(13, "29", 13, "CD", -3, 12),
-  Token(14, ".", 13, ".", -1, 8)]
-=#

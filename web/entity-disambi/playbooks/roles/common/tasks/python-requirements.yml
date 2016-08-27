@@ -1,0 +1,17 @@
+---
+- name: Install Cython
+  pip: name=Cython state=present
+
+- name: Install OpenBLAS
+  yum: name=openblas-devel state=present
+
+- name: Install NumPy
+  pip: name=numpy state=present
+
+- name: Install SciPy
+  pip: name=scipy state=present
+
+- name: Install Python requirements
+  pip: "requirements={{ source_dir }}/requirements.txt state=present"
+  environment:
+    PATH: /usr/local/bin:{{ ansible_env.PATH }}

@@ -1,0 +1,16 @@
+.passwd
+ansible.cfg
+sftp-config*.json
+*.sublime-*
+.vagrant/
+.venv/
+build/
+dist/
+dataset/
+data/
+*.egg
+*.egg-info/
+*.so
+*.c
+*.pyc
+*.bak

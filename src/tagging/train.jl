@@ -1,12 +1,20 @@
+function flatten(data::Vector)
+    res = Int[]
+    for x in data
+        append!(res, x)
+    end
+    res
+end
+
 function train(t::Tagger, nepochs::Int, traindata::Vector, testdata::Vector)
     data_x, data_y = encode(t, traindata)
-    test_x = map(x -> map(xx -> xx[1], x), testdata)
-    pred_y = Int[]
-    for x in testdata
-        for items in x
-            push!(pred_y, t.tag_dict[items[2]])
-        end
-    end
+    test_x, test_y = encode(t, testdata)
+    #pred_y = Int[]
+    #for x in testdata
+    #    for items in x
+    #        push!(pred_y, t.tag_dict[items[2]])
+    #    end
+    #end
 
     info("# words: $(length(t.word_dict))")
     info("# chars: $(length(t.char_dict))")
@@ -22,11 +30,13 @@ function train(t::Tagger, nepochs::Int, traindata::Vector, testdata::Vector)
         loss = fit(t.model, crossentropy, opt, data_x, data_y)
         println("loss: $(loss)")
 
-        pred_z = Int[]
+        test_z = Int[]
         for x in test_x
-            append!(pred_z, t(x))
+            z = t.model(x).data
+            pred = argmax(z, 1)
+            append!(test_z, pred)
         end
-        acc = accuracy(pred_y, pred_z)
+        acc = accuracy(flatten(test_y), test_z)
 
         println("test acc.: $(acc)")
         println("")

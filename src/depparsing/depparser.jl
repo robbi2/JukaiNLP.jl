@@ -5,9 +5,9 @@ type Unlabeled <: ParserType end
 type Labeled <: ParserType end
 
 type DepParser{T <: ParserType}
-    words::IdDict{AbstractString}
-    tags::IdDict{AbstractString}
-    labels::IdDict{AbstractString}
+    words::IdDict{String}
+    tags::IdDict{String}
+    labels::IdDict{String}
     parsertype::Type{T}
     model
     labeler
@@ -17,21 +17,21 @@ type DepParser{T <: ParserType}
     end
 end
 
-function DepParser{T <: ParserType}(parsertype::Type{T}, path::AbstractString)
-    words = IdDict(AbstractString, path)
-    tags = IdDict{AbstractString}()
-    labels = IdDict{AbstractString}()
+function DepParser{T <: ParserType}(parsertype::Type{T}, path::String)
+    words = load(IdDict, path)
+    tags = IdDict{String}()
+    labels = IdDict{String}()
     push!(tags, "NONE")
     # push!(labels, "NONE")
     DepParser{T}(words, tags, labels, parsertype)
 end
 
-@compat function (parser::DepParser){T}(sents::Vector{Vector{T}})
+function (parser::DepParser){T}(sents::Vector{Vector{T}})
     model_t = typeof(parser.model)
     decode(model_t, parser, sents)
 end
 
-@compat function (parser::DepParser)(filepath::AbstractString)
+function (parser::DepParser)(filepath::String)
     sents = readconll(parser, filepath, train=false)
     model_t = typeof(parser.model)
     decode(model_t, parser, sents)

@@ -3,3 +3,4 @@
 *.jl.mem
 *.so
 .corpus
+web/models

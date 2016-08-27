@@ -1,0 +1,38 @@
+---
+- name: Install basic packages
+  yum: name={{ item }} state=present
+  with_items:
+    - bzip2
+    - gcc
+    - gcc-c++
+    - gcc-gfortran
+    - git
+    - make
+    - tar
+    - rsync
+
+- name: Add /usr/local/lib to the library paths
+  copy: content=/usr/local/lib dest=/etc/ld.so.conf.d/usr-local-lib.conf
+  register: usr_local_lib_ld_path
+
+- name: Run ldconfig
+  command: ldconfig
+  when: usr_local_lib_ld_path.changed
+
+# - name: Synchronize code
+#   synchronize: src=../../../../ dest={{ source_dir }}
+#                delete=yes
+#                rsync_opts=--exclude=.*,--exclude=*.pyc,--exclude=*.so,--exclude=db/,--exclude=dist/,--exclude=files/,--exclude=model/,--exclude=playbooks/
+#   tags:
+#     - sync
+
+- include: axel.yml
+- include: epel.yml
+- include: java.yml
+- include: mecab.yml
+- include: s3cmd.yml
+- include: python.yml
+- include: python-requirements.yml
+
+- name: Install application
+  command: "python setup.py develop chdir={{ source_dir }}"

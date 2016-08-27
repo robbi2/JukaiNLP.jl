@@ -60,7 +60,7 @@ end
 # TODO: make State have id field
 # to tell where the State is in a batch
 # called from expand(::State ::Int)
-@compat function (m::FeedForward){T}(s::State{T}, act::Int)
+function (m::FeedForward){T}(s::State{T}, act::Int)
     Var([0f0])
 end
 
@@ -79,7 +79,7 @@ function tagvectors(f::Embedding, tagvec)
     f(Var(hcat(tagvec...)))
 end
 
-@compat function (m::FeedForward)(batch::AbstractVector{Example}, istrain=true)
+function (m::FeedForward)(batch::AbstractVector{Example}, istrain=true)
     wordvec, tagvec, labelvec = [], [], []
     for s in batch
         push!(wordvec, s.wordids)
@@ -98,7 +98,7 @@ end
     x
 end
 
-@compat function (m::FeedForward){T}(batch::AbstractVector{State{T}}, istrain=true)
+function (m::FeedForward){T}(batch::AbstractVector{State{T}}, istrain=true)
     m(map(Example, batch), istrain)
 end
 
@@ -124,7 +124,7 @@ function sparsefeatures(s::State)
     s12r = tokenat(s, s.left.rchild.rchild)
     s2 = tokenat(s, s.left.left)
     s3 = tokenat(s, s.left.left.left)
-    
+
     # labels
     s0rc_label = labelat(s, s.rchild)
     s0rc2_label = labelat(s, s.rsibl.rchild)
@@ -168,6 +168,17 @@ end
 
 typealias Doc Vector{Vector{Token}}
 
+function train2!{T}(::Type{FeedForward}, parser::DepParser{T}, trainsents::Doc,
+    testsents::Doc=Vector{Token}[]; embed="", batchsize=10000, iter=20000,
+    nonlinear=relu, sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[1024],
+    topktags=false, opt=MyAdaGrad(0.01), evaliter=200, outfile="parser.dat")
+    info("WILL RUN $iter ITERATIONS")
+
+    saver = ModelSaver(outfile)
+    initmodel!(parser, FeedForward, embed, topktags,
+               nonlinear, sparsesizes, embedsizes, hiddensizes)
+end
+
 function train!{T}(::Type{FeedForward}, parser::DepParser{T}, trainsents::Doc,
     testsents::Doc=Vector{Token}[]; embed="", batchsize=10000, iter=20000,
     nonlinear=relu, sparsesizes=[20,20,12] ,embedsizes=[50,50,50], hiddensizes=[1024],
@@ -199,7 +210,7 @@ function train!{T}(::Type{FeedForward}, parser::DepParser{T}, trainsents::Doc,
     info("#SAMPLES: $(samplesize)")
 
     for i = 1:iter
-        batch = sub(trainsamples, rand(1:samplesize, batchsize))
+        batch = view(trainsamples, rand(1:samplesize, batchsize))
         preds = parser.model(batch)
         golds = map(s -> s.target, batch)
         correct = reduce(0, zip(argmax(preds.data, 1), golds)) do v, tup
@@ -226,10 +237,9 @@ function decode{T}(::Type{FeedForward}, parser::DepParser{T}, sents::Doc;
     res = State{T}[]
     for k in batches
         batch = k:min(k+batchsize-1, endof(sents))
-        ss = map(s -> State(s, parser), sub(sents, batch))
+        ss = map(s -> State(s, parser), view(sents, batch))
         parsegreedy!(parser, ss)
         append!(res, ss)
     end
     res
 end
-

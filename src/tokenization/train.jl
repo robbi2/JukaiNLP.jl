@@ -24,26 +24,39 @@ function encode(t::Tokenizer, doc::Vector)
     chars, ranges
 end
 
-function train(t::Tokenizer, nepochs::Int, doc::Vector)
-    chars, ranges = encode(t, doc)
-    tags = encode(t.tagset, ranges)
-    data_x, data_y = [], []
-    push!(data_x, chars)
-    push!(data_y, tags)
+function flatten(data::Vector)
+    res = Int[]
+    for x in data
+        append!(res, x)
+    end
+    res
+end
+
+function train(t::Tokenizer, nepochs::Int, traindata::Vector, testdata::Vector)
+    function conv(data)
+        res_x, res_y = Vector{Int}[], Vector{Int}[]
+        for x in data
+            chars, ranges = encode(t, x)
+            tags = encode(t.tagset, ranges)
+            push!(res_x, chars)
+            push!(res_y, tags)
+        end
+        res_x, res_y
+    end
+    train_x, train_y = conv(traindata)
+    test_x, test_y = conv(testdata)
 
     #opt = AdaGrad(0.01)
     opt = SGD(0.0001, momentum=0.9)
     for epoch = 1:nepochs
         println("epoch: $(epoch)")
-        loss = fit(t.model, crossentropy, opt, data_x, data_y)
+        loss = fit(t.model, crossentropy, opt, train_x, train_y)
         println("loss: $(loss)")
 
-        data_z = map(data_x) do x
+        test_z = map(test_x) do x
             argmax(t.model(x).data, 1)
         end
-        data_yy, data_zz = [data_y...], [data_z...]
-        c = count(x -> x[1] == x[2], zip(data_yy,data_zz))
-        acc = c / length(data_yy)
+        acc = accuracy(flatten(test_y), flatten(test_z))
 
         println("test acc.: $(acc)")
         println("")

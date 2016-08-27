@@ -1,0 +1,9 @@
+---
+- name: Install s3cmd
+  yum: name=s3cmd state=present
+
+- name: Add .s3cfg to /root
+  template: src=s3cmd/.s3cfg.j2 dest=/root/.s3cfg
+
+- name: Add .s3cfg to HOME
+  template: src=s3cmd/.s3cfg.j2 dest=./.s3cfg

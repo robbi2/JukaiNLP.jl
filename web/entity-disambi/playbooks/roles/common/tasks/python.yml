@@ -1,0 +1,17 @@
+---
+- name: Install Python
+  yum: name={{ item }} state=present
+  with_items:
+   - python
+   - python-devel
+
+- name: Download ez_setup.py
+  get_url: url=https://bootstrap.pypa.io/ez_setup.py dest={{ work_dir }}/ez_setup.py
+  register: download_ez_setup
+
+- name: Install Setuptools
+  command: python {{ work_dir }}/ez_setup.py
+  when: download_ez_setup.changed
+
+- name: Install Pip
+  easy_install: name=pip

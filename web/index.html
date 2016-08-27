@@ -1,37 +1,55 @@
 <!doctype html>
 <html>
 <head>
-    <title>JukaiWeb</title>
+    <title>JukaiNLP</title>
     <style>
         #view {
             width: 1000px;
             height: 500px;
-            border: 1px solid lightgray;
+            top: 200px;
         }
         #editor {
             position: absolute;
             bottom: 0px;
             width: 1000px;
-            height: 500px;
-        }
-        p.sentence {
-            font-size: 16pt;
-            font-family: 'Ubuntu', sans-serif;
-            color: navy;
+            height: 300px;
         }
     </style>
 <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="http://weaver.nlplab.org/~brat/demo/latest/style-vis.css"/>
-<script type="text/javascript" src="http://weaver.nlplab.org/~brat/demo/latest/client/lib/head.load.min.js"></script>
+<script src="http://weaver.nlplab.org/~brat/demo/latest/client/lib/head.load.min.js"></script>
 </head>
 <body>
+<!-- override a few style-vis.css settings for the embedded version to make things larger -->
+<style type="text/css">
+text { font-size: 20px; }
+.span text { font-size: 16px; }
+.arcs text { font-size: 15px; }
+</style>
 <div id="view"></div>
 <div id="editor"></div>
 
-<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.0/vis.min.js"></script>
-<script src="https://ace.c9.io/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="http://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script src="https://ace.c9.io/build/src/ace.js" charset="utf-8"></script>
 <script type="text/javascript">
+var connection = new WebSocket('ws://' + window.location.host);
+var editor = ace.edit("editor");
+editor.setFontSize(20);
+//editor.setTheme("ace/theme/monokai");
+editor.getSession().setUseWrapMode(true);
+editor.getSession().setTabSize(2);
+editor.focus();
+editor.getSession().on('change', function(e) {
+    var data = editor.getValue();
+    if (data.length == 0) {
+        dispatcher.post('requestRenderData', [{'text':""}]);
+        return;
+    }
+    connection.send(data);
+});
+var dispatcher;
+var conf;
+
 var bratLocation = 'http://weaver.nlplab.org/~brat/demo/latest';
 head.js(
     // External libraries
@@ -54,59 +72,42 @@ var webFontURLs = [
     bratLocation + '/static/fonts/Liberation_Sans-Regular.ttf'
 ];
 
-var connection = new WebSocket('ws://' + window.location.host);
-var editor = ace.edit("editor");
-editor.setFontSize(20);
-//editor.setTheme("ace/theme/monokai");
-editor.getSession().setUseWrapMode(true);
-editor.getSession().setTabSize(2);
-editor.focus();
-editor.getSession().on('change', function(e) {
-    var data = editor.getValue();
-    if (data.length == 0) { return; }
-    connection.send(data);
-});
-
-var collData = {
-    "entity_types": [
-        {
-            "type": "Person",
-            "labels": [ "Person", "Per" ],
-            "bgColor": "#7fa2ff",
-            "borderColor": "darken"
-        }
-    ]
-}
-
-var testdata = {
-    // Our text of choice
-    text     : "Ed O'Kelley.\nAAA BBB",
-    entities : [
-        ['T1', 'Person', [[0, 2]]],
-        ['T2', 'Person', [[3, 11]]],
-        ['T3', 'Person', [[13,16]]]
-    ]
-};
-
-var dispatcher;
-head.ready(function() {
-    dispatcher = Util.embed('view', collData, {}, webFontURLs);
-});
 $(function(){
-    connection.onmessage = function(msg){
+    connection.onmessage = function(msg) {
+        if (conf === undefined) {
+            conf = JSON.parse(msg.data);
+            head.ready(function() {
+                dispatcher = Util.embed('view', conf, {}, webFontURLs);
+            });
+        }
+        if (dispatcher === undefined) return;
+
         var doc = JSON.parse(msg.data);
         var text = "";
         var entities = [];
         var id = 1;
-        //$("#view").empty();
+        var pos = 0;
         for (var i = 0; i < doc.length; i++) {
             var sent = doc[i];
             text += sent.map(t => t.form).join(" ") + "\n";
             for (var k = 0; k < sent.length; k++) {
                 var t = sent[k];
-                var a = t.pos - 1 + t.form.length;
-                var e = [ id, 'Person', [[ t.pos-1, a ]] ];
+                t["id"] = "T" + id;
+                t["bpos"] = pos;
+                t["epos"] = pos + t.form.length;
+                var e = [ t.id, t.cat, [[ t.bpos, t.epos ]] ];
+                entities.push(e);
+                pos += t.form.length + 1;
                 id += 1;
+            }
+            // NE
+            for (var k = 0; k < sent.length; k++) {
+                var t = sent[k];
+                if (t.ne.length == 0) continue;
+                var tag = t.ne[0];
+                var len = t.ne[1];
+                var last = sent[k+len-1];
+                var e = [ t.id+"NE", tag, [[ t.bpos, last.epos ]] ];
                 entities.push(e);
             }
         }

@@ -1,0 +1,3 @@
+recursive-include entity_disambi *.pxd
+recursive-include entity_disambi *.pyx
+recursive-include entity_disambi/utils/opennlp *

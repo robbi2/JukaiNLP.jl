@@ -1,0 +1,6 @@
+---
+- name: Copy EPEL RPM
+  copy: src=epel/epel-release-7-5.noarch.rpm dest={{ work_dir }}/epel-release-7-5.noarch.rpm
+
+- name: Install EPEL
+  yum: name={{ work_dir }}/epel-release-7-5.noarch.rpm state=present
