@@ -1,6 +1,5 @@
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
-*.so
 .corpus
 web/models

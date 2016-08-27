@@ -59,8 +59,7 @@ function load_postagger()
     path = joinpath(Pkg.dir("JukaiNLP"), "web/models")
     m = h5load("$(path)/postagger.h5")
     model = Tagging.POSModel(m["wordfun"],m["charfun"],m["sentfun"])
-    path = "C:/Users/hshindo/Desktop/postagger.jld"
-    t = JLD.load(path, "postagger")
+    t = JLD.load("$(path)/postagger.jld", "postagger")
     t.model = model
     t
 end
