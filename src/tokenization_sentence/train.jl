@@ -41,11 +41,33 @@ function train(t::Tokenizer, nepochs::Int, traindata::Vector, testdata::Vector)
         test_z = map(test_x) do x
             argmax(t.model(x).data, 1)
         end
-        acc = accuracy(flatten(test_y), flatten(test_z))
+        #acc = accuracy(flatten(test_y), flatten(test_z))
+        accuracy_sent(flatten(test_y), flatten(test_z))
 
-        println("test acc.: $(acc)")
+        #println("test acc.: $(acc)")
         println("")
     end
+end
+
+function accuracy_sent(golds::Vector{Int}, preds::Vector{Int})
+    @assert length(golds) == length(preds)
+    correct_g, correct_p = 0, 0
+    total_g, total_p = 0, 0
+    for i = 1:length(golds)
+        if golds[i] == 4
+            golds[i] == preds[i] && (correct_g += 1)
+            total_g += 1
+        end
+        if preds[i] == 4
+            golds[i] == preds[i] && (correct_p += 1)
+            total_p += 1
+        end
+    end
+    prec = correct_g / total_g
+    recall = correct_p / total_p
+    println("precision: $(prec)")
+    println("recall: $(recall)")
+    println("f-value: $(2*recall*prec/(recall+prec))")
 end
 
 function accuracy(golds::Vector{Int}, preds::Vector{Int})
